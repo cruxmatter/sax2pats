@@ -9,9 +9,9 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Alexander Smith"]
   spec.email         = ["saalexantay@gmail.com"]
 
-  spec.summary       = %q{TODO: Write a short summary, because Rubygems requires one.}
-  spec.description   = %q{TODO: Write a longer description or delete this line.}
-  spec.homepage      = "TODO: Put your gem's website or public repo URL here."
+  spec.summary       = %q{A Ruby SAX parser of USPTO patent XML}
+  spec.description   = %q{A SAX parser of USPTO patent XML data using Ruby's Ox gem}
+  spec.homepage      = "https://github.com/doublestranded/sax2pats"
   spec.license       = "MIT"
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
