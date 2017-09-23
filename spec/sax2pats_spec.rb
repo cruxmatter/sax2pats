@@ -15,5 +15,6 @@ RSpec.describe Sax2pats do
     end
     expect(patents.first.inventors.size).to eq 1
     expect(patents.size).to eq 146
+    # expect(patents.map{|pt| pt.claims.size}).to match_array(patents.map{|pt| pt.number_of_claims})
   end
 end

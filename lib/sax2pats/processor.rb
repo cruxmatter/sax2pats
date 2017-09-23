@@ -6,6 +6,7 @@ module Sax2pats
     def initialize(patent_handler)
       @active_tags = []
       @patent_handler = patent_handler
+      # TODO:
       # @include_tags = []
       # @exclude_tags = []
     end

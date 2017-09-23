@@ -1,7 +1,9 @@
 module Sax2pats
   class Patent
     include DynamicAttrs
-    attr_accessor :inventors, :citations
+    attr_accessor :inventors,
+                  :citations,
+                  :abstract
 
     def initialize
       @inventors = []
