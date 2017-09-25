@@ -3,11 +3,16 @@ module Sax2pats
     include DynamicAttrs
     attr_accessor :inventors,
                   :citations,
+                  :claims,
+                  :drawings,
+                  #:tables,
                   :abstract
 
     def initialize
       @inventors = []
       @citations = []
+      @claims = []
+      @drawings = []
     end
   end
 end
