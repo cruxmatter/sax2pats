@@ -18,7 +18,8 @@ module Sax2pats
 
     def sanitize(str)
       # TODO thorough sanitization
-      str.gsub('-','_')
+      str = str.gsub('-','_')
+      str = str.gsub('class','patclass')
     end
   end
 end
