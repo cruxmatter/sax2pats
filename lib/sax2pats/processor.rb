@@ -66,7 +66,11 @@ module Sax2pats
       elsif @active_tags.include?('description-of-drawings')
         @drawing.assign(@current_tag.to_sym, str_value)
       elsif @active_tags.include?('us-patent-grant')
-        @patent.assign(@current_tag.to_sym, str_value)
+        if @active_tags.include?('abstract')
+          @patent.abstract.concat(str_value)
+        else
+          @patent.assign(@current_tag.to_sym, str_value)
+        end
       end
     end
 

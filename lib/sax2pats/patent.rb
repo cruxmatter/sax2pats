@@ -9,6 +9,7 @@ module Sax2pats
                   :abstract
 
     def initialize
+      @abstract = ''
       @inventors = []
       @citations = []
       @claims = []
