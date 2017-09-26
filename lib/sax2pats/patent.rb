@@ -5,8 +5,10 @@ module Sax2pats
                   :citations,
                   :claims,
                   :drawings,
-                  #:tables,
-                  :abstract
+                  :tables,
+                  :abstract,
+                  :description,
+                  :classifications
 
     def initialize
       @abstract = ''
@@ -14,6 +16,7 @@ module Sax2pats
       @citations = []
       @claims = []
       @drawings = []
+      @classifications = []
     end
   end
 end

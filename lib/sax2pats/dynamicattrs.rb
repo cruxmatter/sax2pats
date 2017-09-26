@@ -14,12 +14,9 @@ module Sax2pats
       self.send("#{attr_name}=".to_sym, attr_value)
     end
 
-    private
-
     def sanitize(str)
-      # TODO thorough sanitization
       str = str.gsub('-','_')
-      str = str.gsub(/class$/,'patclass')
+      str = str.gsub(/^class$/,'patclass')
     end
   end
 end
