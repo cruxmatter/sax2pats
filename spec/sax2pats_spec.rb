@@ -26,5 +26,11 @@ RSpec.describe Sax2pats do
     it 'abstract' do
       expect(@patents.first.abstract.start_with?('A first device may receive a first session token from a second device;')).to be_truthy
     end
+
+    it 'patent classifications' do
+      expect(@patents.first.classifications.size).to eq 4
+      expect(@patents.first.classifications.first["classification-level"]).to eq "A"
+      expect(@patents.first.classifications.first["section"]).to eq "H"
+    end
   end
 end
