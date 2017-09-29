@@ -1,6 +1,6 @@
 module Sax2pats
   class Claim
-    include DynamicAttrs
+    include Element
     attr_accessor :refs, :text, :claim_id
 
     def initialize

@@ -1,6 +1,6 @@
 module Sax2pats
   class Citation
-    include Sax2pats::DynamicAttrs
+    include Element
     attr_accessor :category,
                   :country,
                   :name,
