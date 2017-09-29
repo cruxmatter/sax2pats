@@ -2,56 +2,43 @@ module Sax2pats
   class Processor < Ox::Sax
 
     attr_accessor :current_tag,
-                  :active_tags,
-                  :current_entity,
-                  :patent,
-                  :inventor,
-                  :citation,
-                  :claim,
-                  :drawing,
+                  :current_reader,
                   :patent_handler,
-                  :classification
+                  :xml_version
 
     def initialize(patent_handler)
-      @active_tags = []
       @patent_handler = patent_handler
-      @classification_roots = ['classification-cpc', 'classification-ipcr']
+      @xml_version = XMLVersion.new
     end
 
-    def start_element(name)
-      @current_tag = name.to_s
-      if @current_tag.eql?('us-patent-grant')
-        @patent = Patent.new
-        @current_entity = @patent
-      elsif @classification_roots.include?(@current_tag)
-        @classification = {}
-      elsif @current_tag.eql?('inventor')
-        @inventor = Inventor.new
-        @current_entity = @inventor
-      elsif @current_tag.eql?('us-citation')
-        @citation = Citation.new
-        @current_entity = @citation
-      elsif @current_tag.eql?('claim')
-        @claim = Claim.new
-        @current_entity = @claim
-      elsif @current_tag.eql?('description-of-drawings')
-        # drawing <p> tag not being read
-        @drawing = Drawing.new
-        @current_entity = @drawing
+    def start_element(tag_name)
+      @current_tag = tag_name.to_s
+      if @xml_version.element_root([@current_tag]) == Sax2pats::Patent
+        @current_reader = PatentReader.new(@xml_version)
+      else
+        unless @current_reader.nil?
+          @current_reader.start_element(@current_tag)
+        end
       end
-      @active_tags.push(@current_tag)
     end
 
     def attr(name, value)
-      if @current_tag.eql?('claim')
-        if name.eql? :id
-          @claim.claim_id = value
-        end
-      elsif @current_tag.eql?('claim-ref')
-        if name.eql? :idref
-          @claim.refs << value
-        end
-      end
+      # if @current_tag.eql?('claim')
+      #   if name.eql? :id
+      #     @claim.claim_id = value
+      #   end
+      # elsif @current_tag.eql?('claim-ref')
+      #   if name.eql? :idref
+      #     @claim.refs << value
+      #   end
+      # end
+      # if @active_tags.include?('drawings')
+      #   if @current_tag.eql?('img')
+      #     @drawing.img[name] = value
+      #   elsif @current_tag.eql?('figure')
+      #     @drawing.figure[name] = value
+      #   end
+      # end
     end
 
     def text(value)
@@ -60,46 +47,236 @@ module Sax2pats
 
     def value(value)
       str_value = value.as_s
-      if @classification
-        @classification[@current_tag] = str_value
-      elsif @active_tags.include?('inventor')
-        @inventor.assign(@current_tag.to_sym, str_value)
-      elsif @active_tags.include?('us-citation')
-        @citation.assign(@current_tag.to_sym, str_value)
-      elsif @active_tags.include?('claim')
-        if @current_tag.eql?('claim-text')
-          @claim.text.concat(" #{str_value.lstrip}")
-        elsif @current_tag.eql?('claim-ref')
-          @claim.text.concat(str_value)
-        end
-      elsif @active_tags.include?('description-of-drawings')
-        @drawing.assign(@current_tag.to_sym, str_value)
-      elsif @active_tags.include?('us-patent-grant')
-        if @active_tags.include?('abstract')
-          @patent.abstract.concat(str_value)
+      unless @current_reader.nil?
+        @current_reader.value(value)
+      end
+      # if @active_tags.any?{|a| @classification_roots.include? a }
+      #   @classification.assign(@current_tag.to_sym, str_value)
+      # elsif @active_tags.include?('inventor')
+      #   @inventor.assign(@current_tag.to_sym, str_value)
+      # elsif @active_tags.include?('us-citation')
+      #   @citation.assign(@current_tag.to_sym, str_value)
+      # elsif @active_tags.include?('claim')
+      #   if @current_tag.eql?('claim-text')
+      #     @claim.text += " #{str_value.lstrip}"
+      #   elsif @current_tag.eql?('claim-ref')
+      #     @claim.text += str_value
+      #   end
+      # elsif @active_tags.include?('description')
+      #   if @active_tags.include?('description-of-drawings')
+      #
+      #   else
+      #     @description += str_value
+      #   end
+      # elsif @active_tags.include?('drawings')
+      #   @drawing.assign(@current_tag.to_sym, str_value)
+      # elsif @active_tags.include?('us-patent-grant')
+      #   if @active_tags.include?('abstract')
+      #     @patent.abstract += str_value
+      #   else
+      #     @patent.assign(@current_tag.to_sym, str_value)
+      #   end
+      # end
+    end
+
+    def end_element(tag_name)
+      tag_name = tag_name.to_s
+      if @xml_version.element_root([tag_name]) == Sax2pats::Patent
+        @patent_handler.call(@current_reader.element)
+      else
+        @current_reader.end_element(tag_name) unless @current_reader.nil?
+      end
+    end
+  end
+
+  class XMLVersion
+    # 4.2
+    ELEMENT_ROOTS = {
+      'us-patent-grant' => Sax2pats::Patent,
+      'us-citation' => Sax2pats::Citation,
+      'claim' => Sax2pats::Claim,
+      'inventor' => Sax2pats::Inventor
+    }
+
+    NESTED_TEXT_TAGS = {
+      Sax2pats::Patent => ['abstract', 'description'],
+      Sax2pats::Claim => ['text']
+    }
+
+    def element_root(active_tags)
+      if active_tags.include?('drawings') && active_tags.last.eql?('figure')
+        Sax2pats::Drawing
+      else
+        ELEMENT_ROOTS[active_tags.last]
+      end
+    end
+  end
+
+  class ElementReader
+    attr_accessor :xml_version,
+                  :element,
+                  :active_tags,
+                  :current_child_reader
+
+    def initialize(xml_version)
+      @xml_version = xml_version
+      @active_tags = []
+      initialize_element
+    end
+
+    def initialize_element
+      raise NotImplementedError
+    end
+
+    def start_element(tag_name)
+      raise NotImplementedError
+    end
+
+    def value(value)
+      unless @active_tags.last.nil?
+        element_attr = @element.sanitize(@active_tags.last).to_sym
+        if @element.respond_to? element_attr
+          @element.send("#{element_attr}=".to_sym, value.as_s)
         else
-          @patent.assign(@current_tag.to_sym, str_value)
+          # puts "undefined attribute #{element_attr}"
         end
       end
     end
 
-    def end_element(name)
-      name = name.to_s
-      if name.eql?('us-patent-grant')
-        @patent_handler.call(@patent)
-      elsif @classification_roots.include?(name)
-        @current_entity.classifications << @classification
-        @classification = nil
-      elsif name.eql?('inventor')
-        @patent.inventors << @inventor
-      elsif name.eql?('us-citation')
-        @patent.citations << @citation
-      elsif name.eql?('claim')
-        @claim.text.lstrip.strip
-        @patent.claims << @claim
-      elsif name.eql?('description-of-drawings')
-        @patent.drawings << @drawing
+    def attr(name, value)
+
+    end
+
+    def end_element(tag_name)
+      raise NotImplementedError
+    end
+
+    def child_readers
+      {}
+    end
+  end
+
+  class PatentReader < ElementReader
+
+    def initialize_element
+      @element = Patent.new
+    end
+
+    def start_element(tag_name)
+      @active_tags.push(tag_name)
+      element = @xml_version.element_root(@active_tags)
+      unless element.nil?
+        @current_child_reader = child_readers[element].new(@xml_version)
       end
+      if @current_child_reader.nil?
+        # handle direct data
+      else
+        @current_child_reader.start_element(tag_name)
+      end
+    end
+
+    def value(value)
+      if @current_child_reader.nil?
+        super(value)
+      else
+        @current_child_reader.value(value)
+      end
+    end
+
+    def attr(name, value)
+      if @current_child_reader.nil?
+        # handle direct data
+      else
+        @current_child_reader.attr(name, value)
+      end
+    end
+
+    def end_element(tag_name)
+      @active_tags.pop
+      if @current_child_reader.nil?
+        # handle direct data
+      else
+        @current_child_reader.end_element(tag_name)
+        if child_readers[@xml_version.element_root(@active_tags)] == @current_child_reader.class
+          klass = @current_child_reader.element.class
+          case
+          when klass == Sax2pats::Claim
+            @element.claims << @current_child_reader.element
+          when klass == Sax2pats::Citation
+            @element.citations << @current_child_reader.element
+          when klass == Sax2pats::Inventor
+            @element.inventors << @current_child_reader.element
+          when klass == Sax2pats::Drawing
+            @element.drawings << @current_child_reader.element
+          else
+          end
+          @current_child_reader = nil
+        end
+      end
+    end
+
+    def child_readers
+      {
+        Sax2pats::Claim => ClaimReader,
+        Sax2pats::Citation => CitationReader,
+        Sax2pats::Drawing => DrawingReader,
+        Sax2pats::Inventor => InventorReader
+      }
+    end
+  end
+
+  class ClaimReader < ElementReader
+    def initialize_element
+      @element = Claim.new
+    end
+
+    def start_element(tag_name)
+      @active_tags.push(tag_name)
+    end
+
+    def end_element(tag_name)
+      @active_tags.pop
+    end
+  end
+
+  class CitationReader < ElementReader
+    def initialize_element
+      @element = Citation.new
+    end
+
+    def start_element(tag_name)
+      @active_tags.push(tag_name)
+    end
+
+    def end_element(tag_name)
+      @active_tags.pop
+    end
+  end
+
+  class InventorReader < ElementReader
+    def initialize_element
+      @element = Inventor.new
+    end
+
+    def start_element(tag_name)
+      @active_tags.push(tag_name)
+    end
+
+    def end_element(tag_name)
+      @active_tags.pop
+    end
+  end
+
+  class DrawingReader < ElementReader
+    def initialize_element
+      @element = Drawing.new
+    end
+
+    def start_element(tag_name)
+      @active_tags.push(tag_name)
+    end
+
+    def end_element(tag_name)
       @active_tags.pop
     end
   end

@@ -1,6 +1,6 @@
 module Sax2pats
   class Inventor
-    include Sax2pats::DynamicAttrs
-    attr_accessor :state, :city
+    include Element
+    attr_accessor :state, :city, :country, :first_name, :last_name
   end
 end

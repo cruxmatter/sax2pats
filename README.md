@@ -2,6 +2,8 @@
 
 Using Ruby's Ox::Sax to parse USPTO patent XML files.
 
+Another option is to develop a JRuby binding over the Java parser seen [here](https://github.com/USPTO/PatentPublicData)
+
 ## Installation
 
 Add this line to your application's Gemfile:

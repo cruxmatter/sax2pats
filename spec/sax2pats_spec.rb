@@ -32,5 +32,14 @@ RSpec.describe Sax2pats do
       expect(@patents.first.classifications.first["classification-level"]).to eq "A"
       expect(@patents.first.classifications.first["section"]).to eq "H"
     end
+
+    it 'drawings' do
+      expect(@patents.last.drawings.size).to eq 10
+      expect(@patents.last.drawings.first.figure[:id]).to eq 'Fig-EMI-D00000'
+    end
+
+    it 'description' do
+      expect(@patents.last.description).to ne ''
+    end
   end
 end
