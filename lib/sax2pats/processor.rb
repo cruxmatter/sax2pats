@@ -110,13 +110,49 @@ module Sax2pats
         ELEMENT_ROOTS[active_tags.last]
       end
     end
+
+    def nested_text?(element, tag_name)
+      NESTED_TEXT_TAGS[element].include?(tag_name)
+    end
+  end
+
+  class TextReader
+    attr_accessor :xml_version,
+                  :root_tag,
+                  :text
+
+    def initialize(xml_version)
+      @xml_version = xml_version
+      initialize_element
+    end
+
+    def initialize_element
+      @text = ""
+    end
+
+    def start_element(tag_name)
+      unless tag_name.eql? @root_tag
+        @text += "<#{tag_name}>"
+      end
+    end
+
+    def value(value)
+      @text += value.as_s
+    end
+
+    def end_element(tag_name)
+      unless tag_name.eql? @root_tag
+        @text += "</#{tag_name}>"
+      end
+    end
   end
 
   class ElementReader
     attr_accessor :xml_version,
                   :element,
                   :active_tags,
-                  :current_child_reader
+                  :current_child_reader,
+                  :current_text_reader
 
     def initialize(xml_version)
       @xml_version = xml_version
@@ -170,6 +206,13 @@ module Sax2pats
       end
       if @current_child_reader.nil?
         # handle direct data
+        if @xml_version.nested_text?(Sax2pats::Patent, tag_name)
+          @current_text_reader = TextReader.new(@xml_version)
+          @current_text_reader.root_tag = tag_name
+        end
+        unless @current_text_reader.nil?
+          @current_text_reader.start_element(tag_name)
+        end
       else
         @current_child_reader.start_element(tag_name)
       end
@@ -177,7 +220,11 @@ module Sax2pats
 
     def value(value)
       if @current_child_reader.nil?
-        super(value)
+        if @current_text_reader.nil?
+          super(value)
+        else
+          @current_text_reader.value(value)
+        end
       else
         @current_child_reader.value(value)
       end
@@ -192,9 +239,16 @@ module Sax2pats
     end
 
     def end_element(tag_name)
-      @active_tags.pop
       if @current_child_reader.nil?
         # handle direct data
+        unless @current_text_reader.nil?
+          @current_text_reader.end_element(tag_name)
+          if @xml_version.nested_text?(Sax2pats::Patent, tag_name)
+            element_attr = @element.sanitize(tag_name).to_sym
+            @element.send("#{element_attr}=", @current_text_reader.text)
+            @current_text_reader = nil
+          end
+        end
       else
         @current_child_reader.end_element(tag_name)
         if child_readers[@xml_version.element_root(@active_tags)] == @current_child_reader.class
@@ -213,6 +267,7 @@ module Sax2pats
           @current_child_reader = nil
         end
       end
+      @active_tags.pop
     end
 
     def child_readers
