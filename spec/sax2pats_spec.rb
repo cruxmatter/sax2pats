@@ -39,7 +39,8 @@ RSpec.describe Sax2pats do
     end
 
     it 'description' do
-      expect(@patents.last.description).to ne ''
+      p @patents.last.description
+      expect(@patents.last.description).to be
     end
   end
 end
