@@ -5,7 +5,7 @@ module Sax2pats
 end
 
 require 'ox'
-require 'sax2pats/element'
+require 'sax2pats/entity'
 require 'sax2pats/citation'
 require 'sax2pats/patent'
 require 'sax2pats/classification'

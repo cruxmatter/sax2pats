@@ -1,6 +1,6 @@
 module Sax2pats
   class Claim
-    include Element
+    include Entity
     attr_accessor :refs, :text, :claim_id
 
     def initialize

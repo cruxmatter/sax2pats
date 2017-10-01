@@ -1,6 +1,6 @@
 module Sax2pats
   class Citation
-    include Element
+    include Entity
     attr_accessor :category,
                   :country,
                   :name,

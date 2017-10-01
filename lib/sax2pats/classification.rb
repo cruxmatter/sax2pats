@@ -1,6 +1,6 @@
 module Sax2pats
   class Classification
-    include Element
+    include Entity
   end
 
   class IPCClassification < Classification

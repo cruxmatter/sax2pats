@@ -1,6 +1,6 @@
 module Sax2pats
   class Drawing
-    include Element
+    include Entity
     attr_accessor :img, :figure, :description
 
     def initialize
