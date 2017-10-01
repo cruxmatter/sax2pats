@@ -13,7 +13,7 @@ module Sax2pats
 
     def start_element(tag_name)
       @current_tag = tag_name.to_s
-      if @xml_version.element_root([@current_tag]) == Sax2pats::Patent
+      if @xml_version.entity_root([@current_tag]) == Sax2pats::Patent
         @current_reader = PatentReader.new(@xml_version)
       else
         unless @current_reader.nil?
@@ -50,39 +50,12 @@ module Sax2pats
       unless @current_reader.nil?
         @current_reader.value(value)
       end
-      # if @active_tags.any?{|a| @classification_roots.include? a }
-      #   @classification.assign(@current_tag.to_sym, str_value)
-      # elsif @active_tags.include?('inventor')
-      #   @inventor.assign(@current_tag.to_sym, str_value)
-      # elsif @active_tags.include?('us-citation')
-      #   @citation.assign(@current_tag.to_sym, str_value)
-      # elsif @active_tags.include?('claim')
-      #   if @current_tag.eql?('claim-text')
-      #     @claim.text += " #{str_value.lstrip}"
-      #   elsif @current_tag.eql?('claim-ref')
-      #     @claim.text += str_value
-      #   end
-      # elsif @active_tags.include?('description')
-      #   if @active_tags.include?('description-of-drawings')
-      #
-      #   else
-      #     @description += str_value
-      #   end
-      # elsif @active_tags.include?('drawings')
-      #   @drawing.assign(@current_tag.to_sym, str_value)
-      # elsif @active_tags.include?('us-patent-grant')
-      #   if @active_tags.include?('abstract')
-      #     @patent.abstract += str_value
-      #   else
-      #     @patent.assign(@current_tag.to_sym, str_value)
-      #   end
-      # end
     end
 
     def end_element(tag_name)
       tag_name = tag_name.to_s
-      if @xml_version.element_root([tag_name]) == Sax2pats::Patent
-        @patent_handler.call(@current_reader.element)
+      if @xml_version.entity_root([tag_name]) == Sax2pats::Patent
+        @patent_handler.call(@current_reader.entity)
       else
         @current_reader.end_element(tag_name) unless @current_reader.nil?
       end
@@ -103,7 +76,7 @@ module Sax2pats
       Sax2pats::Claim => ['text']
     }
 
-    def element_root(active_tags)
+    def entity_root(active_tags)
       if active_tags.include?('drawings') && active_tags.last.eql?('figure')
         Sax2pats::Drawing
       else
@@ -111,8 +84,8 @@ module Sax2pats
       end
     end
 
-    def nested_text?(element, tag_name)
-      NESTED_TEXT_TAGS[element].include?(tag_name)
+    def nested_text?(entity, tag_name)
+      NESTED_TEXT_TAGS[entity].include?(tag_name)
     end
   end
 
@@ -123,10 +96,6 @@ module Sax2pats
 
     def initialize(xml_version)
       @xml_version = xml_version
-      initialize_element
-    end
-
-    def initialize_element
       @text = ""
     end
 
@@ -147,9 +116,10 @@ module Sax2pats
     end
   end
 
-  class ElementReader
+  class EntityReader
     attr_accessor :xml_version,
-                  :element,
+                  :entity,
+                  :entity_class,
                   :active_tags,
                   :current_child_reader,
                   :current_text_reader
@@ -157,71 +127,47 @@ module Sax2pats
     def initialize(xml_version)
       @xml_version = xml_version
       @active_tags = []
-      initialize_element
+      initialize_entity
     end
 
-    def initialize_element
+    def initialize_entity
       raise NotImplementedError
-    end
-
-    def start_element(tag_name)
-      raise NotImplementedError
-    end
-
-    def value(value)
-      unless @active_tags.last.nil?
-        element_attr = @element.sanitize(@active_tags.last).to_sym
-        if @element.respond_to? element_attr
-          @element.send("#{element_attr}=".to_sym, value.as_s)
-        else
-          # puts "undefined attribute #{element_attr}"
-        end
-      end
-    end
-
-    def attr(name, value)
-
-    end
-
-    def end_element(tag_name)
-      raise NotImplementedError
-    end
-
-    def child_readers
-      {}
-    end
-  end
-
-  class PatentReader < ElementReader
-
-    def initialize_element
-      @element = Patent.new
     end
 
     def start_element(tag_name)
       @active_tags.push(tag_name)
-      element = @xml_version.element_root(@active_tags)
-      unless element.nil?
-        @current_child_reader = child_readers[element].new(@xml_version)
+      entity = @xml_version.entity_root(@active_tags)
+      unless entity.nil?
+        @current_child_reader = child_readers[entity].new(@xml_version)
       end
       if @current_child_reader.nil?
-        # handle direct data
-        if @xml_version.nested_text?(Sax2pats::Patent, tag_name)
-          @current_text_reader = TextReader.new(@xml_version)
-          @current_text_reader.root_tag = tag_name
-        end
-        unless @current_text_reader.nil?
-          @current_text_reader.start_element(tag_name)
-        end
+        start_entity_attr(tag_name)
       else
         @current_child_reader.start_element(tag_name)
+      end
+    end
+
+    def start_entity_attr(tag_name)
+      if @xml_version.nested_text?(@entity_class, tag_name)
+        @current_text_reader = TextReader.new(@xml_version)
+        @current_text_reader.root_tag = tag_name
+      end
+      unless @current_text_reader.nil?
+        @current_text_reader.start_element(tag_name)
       end
     end
 
     def value(value)
       if @current_child_reader.nil?
         if @current_text_reader.nil?
-          super(value)
+          unless @active_tags.last.nil?
+            entity_attr = @entity.sanitize(@active_tags.last).to_sym
+            if @entity.respond_to? entity_attr
+              @entity.send("#{entity_attr}=".to_sym, value.as_s)
+            else
+              # puts "undefined attribute #{entity_attr} for #{@entity_class}"
+            end
+          end
         else
           @current_text_reader.value(value)
         end
@@ -238,36 +184,59 @@ module Sax2pats
       end
     end
 
+    def end_entity_attr(tag_name)
+      unless @current_text_reader.nil?
+        @current_text_reader.end_element(tag_name)
+        if @xml_version.nested_text?(@entity_class, tag_name)
+          entity_attr = @entity.sanitize(tag_name).to_sym
+          @entity.send("#{entity_attr}=", @current_text_reader.text)
+          @current_text_reader = nil
+        end
+      end
+    end
+
     def end_element(tag_name)
       if @current_child_reader.nil?
-        # handle direct data
-        unless @current_text_reader.nil?
-          @current_text_reader.end_element(tag_name)
-          if @xml_version.nested_text?(Sax2pats::Patent, tag_name)
-            element_attr = @element.sanitize(tag_name).to_sym
-            @element.send("#{element_attr}=", @current_text_reader.text)
-            @current_text_reader = nil
-          end
-        end
+        end_entity_attr(tag_name)
       else
         @current_child_reader.end_element(tag_name)
-        if child_readers[@xml_version.element_root(@active_tags)] == @current_child_reader.class
-          klass = @current_child_reader.element.class
-          case
-          when klass == Sax2pats::Claim
-            @element.claims << @current_child_reader.element
-          when klass == Sax2pats::Citation
-            @element.citations << @current_child_reader.element
-          when klass == Sax2pats::Inventor
-            @element.inventors << @current_child_reader.element
-          when klass == Sax2pats::Drawing
-            @element.drawings << @current_child_reader.element
-          else
-          end
+        if child_readers[@xml_version.entity_root(@active_tags)] == @current_child_reader.class
+          finish_child(tag_name)
           @current_child_reader = nil
         end
       end
       @active_tags.pop
+    end
+
+    def finish_child(tag_name)
+
+    end
+
+    def child_readers
+      {}
+    end
+  end
+
+  class PatentReader < EntityReader
+
+    def initialize_entity
+      @entity_class = Sax2pats::Patent
+      @entity = Patent.new
+    end
+
+    def finish_child(tag_name)
+      klass = @current_child_reader.entity.class
+      case
+      when klass == Sax2pats::Claim
+        @entity.claims << @current_child_reader.entity
+      when klass == Sax2pats::Citation
+        @entity.citations << @current_child_reader.entity
+      when klass == Sax2pats::Inventor
+        @entity.inventors << @current_child_reader.entity
+      when klass == Sax2pats::Drawing
+        @entity.drawings << @current_child_reader.entity
+      else
+      end
     end
 
     def child_readers
@@ -280,9 +249,10 @@ module Sax2pats
     end
   end
 
-  class ClaimReader < ElementReader
-    def initialize_element
-      @element = Claim.new
+  class ClaimReader < EntityReader
+    def initialize_entity
+      @entity_class = Sax2pats::Claim
+      @entity = Claim.new
     end
 
     def start_element(tag_name)
@@ -294,9 +264,10 @@ module Sax2pats
     end
   end
 
-  class CitationReader < ElementReader
-    def initialize_element
-      @element = Citation.new
+  class CitationReader < EntityReader
+    def initialize_entity
+      @entity_class = Sax2pats::Citation
+      @entity = Citation.new
     end
 
     def start_element(tag_name)
@@ -308,9 +279,10 @@ module Sax2pats
     end
   end
 
-  class InventorReader < ElementReader
-    def initialize_element
-      @element = Inventor.new
+  class InventorReader < EntityReader
+    def initialize_entity
+      @entity_class = Sax2pats::Inventor
+      @entity = Inventor.new
     end
 
     def start_element(tag_name)
@@ -322,9 +294,10 @@ module Sax2pats
     end
   end
 
-  class DrawingReader < ElementReader
-    def initialize_element
-      @element = Drawing.new
+  class DrawingReader < EntityReader
+    def initialize_entity
+      @entity_class = Sax2pats::Drawing
+      @entity = Drawing.new
     end
 
     def start_element(tag_name)

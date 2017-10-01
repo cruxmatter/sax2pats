@@ -1,5 +1,5 @@
 module Sax2pats
-  module Element
+  module Entity
     def sanitize(str)
       str = str.gsub('-','_')
       str = str.gsub(/^class$/,'patclass')

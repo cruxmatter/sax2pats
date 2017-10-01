@@ -1,6 +1,6 @@
 module Sax2pats
   class Patent
-    include Element
+    include Entity
     attr_accessor :inventors,
                   :citations,
                   :claims,
