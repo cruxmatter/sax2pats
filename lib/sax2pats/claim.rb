@@ -3,7 +3,6 @@ module Sax2pats
     include Entity
     attr_accessor :refs, :text_elements, :claim_id, :type
 
-
     def initialize
       @refs = []
       @text_elements = []
@@ -11,6 +10,10 @@ module Sax2pats
 
     def type
       @type ||= @refs.count > 0 ? :dependent : :independent
+    end
+
+    def as_text
+      @text_elements.join
     end
   end
 end

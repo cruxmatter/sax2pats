@@ -76,7 +76,8 @@ module Sax2pats
                   :entity_class,
                   :active_tags,
                   :current_child_reader,
-                  :current_text_reader
+                  :current_text_reader,
+                  :version_reader
 
     def initialize(xml_version)
       @xml_version = xml_version
@@ -102,7 +103,7 @@ module Sax2pats
     end
 
     def start_entity_attr(tag_name)
-      @custom_reader.custom_start(@entity, tag_name) unless @custom_reader.nil?
+      @version_reader.custom_start(@entity, tag_name)
       if @xml_version.nested_text?(@entity_class, tag_name)
         @current_text_reader = TextReader.new(@xml_version)
         @current_text_reader.root_tag = tag_name
@@ -114,11 +115,11 @@ module Sax2pats
 
     def value(value)
       if @current_child_reader.nil?
-        @custom_reader.custom_value(@entity, @active_tags.last, value) unless @custom_reader.nil?
+        @version_reader.custom_value(@entity, @active_tags.last, value)
         if @current_text_reader.nil?
           unless @active_tags.last.nil?
-            entity_attr = @entity.sanitize(@active_tags.last).to_sym
-            if @entity.respond_to? entity_attr
+            entity_attr = @version_reader.attrs_map[@active_tags.last]
+            if entity_attr && @entity.respond_to?(entity_attr)
               @entity.send("#{entity_attr}=".to_sym, value.as_s)
             end
           end
@@ -132,19 +133,21 @@ module Sax2pats
 
     def attr(name, value)
       if @current_child_reader.nil?
-        @custom_reader.custom_attr(@entity, name, value) unless @custom_reader.nil?
+        @version_reader.custom_attr(@entity, @active_tags.last, name, value)
       else
         @current_child_reader.attr(name, value)
       end
     end
 
     def end_entity_attr(tag_name)
-      @custom_reader.custom_end(@entity, tag_name) unless @custom_reader.nil?
+      @version_reader.custom_end(@entity, tag_name)
       unless @current_text_reader.nil?
         @current_text_reader.end_element(tag_name)
         if @xml_version.nested_text?(@entity_class, tag_name)
-          entity_attr = @entity.sanitize(tag_name).to_sym
-          @entity.send("#{entity_attr}=", @current_text_reader.text)
+          entity_attr = @version_reader.attrs_map[tag_name]
+          if entity_attr && @entity.respond_to?(entity_attr)
+            @entity.send("#{entity_attr}=", @current_text_reader.text)
+          end
           @current_text_reader = nil
         end
       end
@@ -178,13 +181,13 @@ module Sax2pats
     def initialize_entity
       @entity_class = Sax2pats::Patent
       @entity = Patent.new
+      @version_reader = @xml_version.version_reader(@entity_class)
     end
 
     def finish_child(tag_name)
       klass = @current_child_reader.entity.class
       case
       when klass == Sax2pats::Claim
-        p @current_child_reader.entity.inspect
         @entity.claims << @current_child_reader.entity
       when klass == Sax2pats::Citation
         @entity.citations << @current_child_reader.entity
@@ -212,7 +215,7 @@ module Sax2pats
     def initialize_entity
       @entity_class = Sax2pats::Claim
       @entity = Claim.new
-      @custom_reader = @xml_version.custom_version_reader(Sax2pats::Claim)
+      @version_reader = @xml_version.version_reader(@entity_class)
     end
   end
 
@@ -222,14 +225,7 @@ module Sax2pats
     def initialize_entity
       @entity_class = Sax2pats::Citation
       @entity = Citation.new
-    end
-
-    def start_element(tag_name)
-      @active_tags.push(tag_name)
-    end
-
-    def end_element(tag_name)
-      @active_tags.pop
+      @version_reader = @xml_version.version_reader(@entity_class)
     end
   end
 
@@ -239,14 +235,7 @@ module Sax2pats
     def initialize_entity
       @entity_class = Sax2pats::Inventor
       @entity = Inventor.new
-    end
-
-    def start_element(tag_name)
-      @active_tags.push(tag_name)
-    end
-
-    def end_element(tag_name)
-      @active_tags.pop
+      @version_reader = @xml_version.version_reader(@entity_class)
     end
   end
 
@@ -256,14 +245,7 @@ module Sax2pats
     def initialize_entity
       @entity_class = Sax2pats::Drawing
       @entity = Drawing.new
-    end
-
-    def start_element(tag_name)
-      @active_tags.push(tag_name)
-    end
-
-    def end_element(tag_name)
-      @active_tags.pop
+      @version_reader = @xml_version.version_reader(@entity_class)
     end
   end
 end

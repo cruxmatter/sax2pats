@@ -1,4 +1,18 @@
 module Sax2pats
+  module EntityVersion
+    def attrs_map
+      {}
+    end
+
+    def custom_start(entity, tag_name); end
+
+    def custom_value(entity, tag_name, value); end
+
+    def custom_attr(entity, tag_name, name, value); end
+
+    def custom_end(entity, tag_name); end
+  end
+
   class XMLVersion
     # 4.2
     ELEMENT_ROOTS = {
@@ -24,30 +38,49 @@ module Sax2pats
       NESTED_TEXT_TAGS.include?(entity) && NESTED_TEXT_TAGS[entity].include?(tag_name)
     end
 
-    def custom_version_reader(entity_class)
+    def version_reader(entity_class)
       case
       when entity_class.eql?(Sax2pats::Claim)
         ClaimVersion.new
+      when entity_class.eql?(Sax2pats::Citation)
+        CitationVersion.new
+      when entity_class.eql?(Sax2pats::Patent)
+        PatentVersion.new
+      when entity_class.eql?(Sax2pats::Inventor)
+        InventorVersion.new
+      when entity_class.eql?(Sax2pats::Drawing)
+        DrawingVersion.new
       else
 
       end
     end
 
-    module EntityVersion
-      def custom_start(entity, tag_name)
-        raise NotImplementedError
-      end
+    class CitationVersion
+      include EntityVersion
 
-      def custom_value(entity, tag_name, value)
-        raise NotImplementedError
+      def attrs_map
+        {
+          'category' => :category,
+          'name' => :name,
+          'date' => :date,
+          'doc-number' => :doc_number,
+          'country' => :country,
+          'kind' => :kind
+        }
       end
+    end
 
-      def custom_attr(entity, name, value)
-        raise NotImplementedError
-      end
+    class InventorVersion
+      include EntityVersion
 
-      def custom_end(entity, tag_name)
-        raise NotImplementedError
+      def attrs_map
+        {
+          'city' => 'city',
+          'state' => 'state',
+          'country' => 'country',
+          'first-name' => 'first_name',
+          'last-name' => 'last_name'
+        }
       end
     end
 
@@ -75,7 +108,7 @@ module Sax2pats
         end
       end
 
-      def custom_attr(claim, name, value)
+      def custom_attr(claim, tag_name, name, value)
         case
         when name.eql?(:idref)
           claim.refs << value
@@ -90,6 +123,56 @@ module Sax2pats
         case
         when tag_name.eql?('claim-text')
           claim.text_elements << @claim_text
+        else
+
+        end
+      end
+    end
+
+    class PatentVersion
+      include EntityVersion
+
+      def attrs_map
+        {
+          'invention-title' => :invention_title,
+          'date' => :date,
+          'number-of-claims' => :number_of_claims,
+          'kind' => :kind,
+          'abstract' => :abstract,
+          'description' => :description
+        }
+      end
+    end
+
+    class DrawingVersion
+      include EntityVersion
+      attr_accessor :figure, :img
+
+      def attrs_map
+        {
+          'figure' => :figure,
+          'img' => :img
+        }
+      end
+
+      def custom_attr(drawing, tag_name, name, value)
+        case
+        when tag_name.eql?('figure')
+          @figure = {} if @figure.nil?
+          @figure[name] = value
+        when tag_name.eql?('img')
+          @img = {} if @img.nil?
+          @img[name] = value
+        else
+        end
+      end
+
+      def custom_end(drawing, tag_name)
+        case
+        when tag_name.eql?('figure')
+          drawing.figure = @figure
+        when tag_name.eql?('img')
+          drawing.img = @img
         else
 
         end
