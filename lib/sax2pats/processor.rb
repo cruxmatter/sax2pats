@@ -8,7 +8,7 @@ module Sax2pats
 
     def initialize(patent_handler)
       @patent_handler = patent_handler
-      @xml_version = Sax2pats::XMLVersion.new
+      @xml_version = Sax2pats::XMLVersion4_2.new
     end
 
     def start_element(tag_name)
