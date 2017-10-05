@@ -13,8 +13,37 @@ module Sax2pats
     def custom_end(entity, tag_name); end
   end
 
-  class XMLVersion
-    # 4.2
+  module XMLVersion
+
+    def entity_root(active_tags)
+      raise NotImplementedError
+    end
+
+    def nested_text?(entity, tag_name)
+      raise NotImplementedError
+    end
+
+    def version_reader(entity_class)
+      case
+      when entity_class.eql?(Sax2pats::Claim)
+        self.class::ClaimVersion.new
+      when entity_class.eql?(Sax2pats::Citation)
+        self.class::CitationVersion.new
+      when entity_class.eql?(Sax2pats::Patent)
+        self.class::PatentVersion.new
+      when entity_class.eql?(Sax2pats::Inventor)
+        self.class::InventorVersion.new
+      when entity_class.eql?(Sax2pats::Drawing)
+        self.class::DrawingVersion.new
+      else
+
+      end
+    end
+  end
+
+  class XMLVersion4_2
+    include XMLVersion
+
     ELEMENT_ROOTS = {
       'us-patent-grant' => Sax2pats::Patent,
       'us-citation' => Sax2pats::Citation,
@@ -36,23 +65,6 @@ module Sax2pats
 
     def nested_text?(entity, tag_name)
       NESTED_TEXT_TAGS.include?(entity) && NESTED_TEXT_TAGS[entity].include?(tag_name)
-    end
-
-    def version_reader(entity_class)
-      case
-      when entity_class.eql?(Sax2pats::Claim)
-        ClaimVersion.new
-      when entity_class.eql?(Sax2pats::Citation)
-        CitationVersion.new
-      when entity_class.eql?(Sax2pats::Patent)
-        PatentVersion.new
-      when entity_class.eql?(Sax2pats::Inventor)
-        InventorVersion.new
-      when entity_class.eql?(Sax2pats::Drawing)
-        DrawingVersion.new
-      else
-
-      end
     end
 
     class CitationVersion
