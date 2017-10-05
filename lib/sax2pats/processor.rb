@@ -55,17 +55,17 @@ module Sax2pats
 
     def start_element(tag_name)
       unless tag_name.eql? @root_tag
-        @text += "<#{tag_name}>"
+        @text.concat("<#{tag_name}>")
       end
     end
 
     def value(value)
-      @text += value.as_s
+      @text.concat(value.as_s)
     end
 
     def end_element(tag_name)
       unless tag_name.eql? @root_tag
-        @text += "</#{tag_name}>"
+        @text.concat("</#{tag_name}>")
       end
     end
   end
