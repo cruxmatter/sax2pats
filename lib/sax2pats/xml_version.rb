@@ -112,9 +112,9 @@ module Sax2pats
       def custom_value(claim, tag_name, value)
         case
         when tag_name.eql?('claim-text')
-          @claim_text += value.as_s
+          @claim_text.concat(value.as_s)
         when tag_name.eql?('claim-ref')
-          @claim_text += value.as_s
+          @claim_text.concat(value.as_s)
         else
 
         end
