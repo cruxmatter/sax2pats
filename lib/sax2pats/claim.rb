@@ -1,11 +1,19 @@
 module Sax2pats
   class Claim
-    include DynamicAttrs
-    attr_accessor :refs, :text, :claim_id
+    include Entity
+    attr_accessor :refs, :text_elements, :claim_id, :type
 
     def initialize
       @refs = []
-      @text = ''
+      @text_elements = []
+    end
+
+    def type
+      @type ||= @refs.count > 0 ? :dependent : :independent
+    end
+
+    def as_text
+      @text_elements.join
     end
   end
 end

@@ -24,13 +24,27 @@ RSpec.describe Sax2pats do
     end
 
     it 'abstract' do
-      expect(@patents.first.abstract.start_with?('A first device may receive a first session token from a second device;')).to be_truthy
+      expect(@patents.first.abstract.include?('A first device may receive a first session token from a second device;')).to be_truthy
+    end
+
+    it 'inventors' do
+      expect(@patents.last.inventors.size).to eq 3
+      expect(@patents.last.inventors.map(&:last_name)).to match_array(["Afkhami", "Katar", "Rouhana"])
     end
 
     it 'patent classifications' do
       expect(@patents.first.classifications.size).to eq 4
       expect(@patents.first.classifications.first["classification-level"]).to eq "A"
       expect(@patents.first.classifications.first["section"]).to eq "H"
+    end
+
+    it 'drawings' do
+      expect(@patents.last.drawings.size).to eq 10
+      expect(@patents.last.drawings.first.figure[:id]).to eq 'Fig-EMI-D00000'
+    end
+
+    it 'description' do
+      expect(@patents.last.description.include?('Computer program code for carrying out operations for aspects of the present inventive subject matter may be written in any combination of one or more programming languages, including an object oriented programming language such as Java, Smalltalk, C++ or the like and conventional procedural programming languages, such as the “C” programming language or similar programming languages.')).to be_truthy
     end
   end
 end
