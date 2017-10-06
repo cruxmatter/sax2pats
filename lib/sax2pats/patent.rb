@@ -9,6 +9,7 @@ module Sax2pats
                   :classifications,
                   :invention_title,
                   :doc_number,
+                  :category,
                   :date,
                   :number_of_claims,
                   :kind,
@@ -25,8 +26,8 @@ module Sax2pats
       @classifications = []
     end
 
-    # def publication_reference
-    #   [self.doc_number, self.date, self.country, self.kind]
-    # end
+    def publication_reference
+      [@doc_number, @date, @country, @kind]
+    end
   end
 end

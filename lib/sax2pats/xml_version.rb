@@ -35,6 +35,10 @@ module Sax2pats
         self.class::InventorVersion.new
       when entity_class.eql?(Sax2pats::Drawing)
         self.class::DrawingVersion.new
+      when entity_class.eql?(Sax2pats::IPCClassification)
+        self.class::IPCClassificationVersion.new
+      when entity_class.eql?(Sax2pats::CPCClassification)
+        self.class::CPCClassificationVersion.new
       else
 
       end
@@ -48,7 +52,9 @@ module Sax2pats
       'us-patent-grant' => Sax2pats::Patent,
       'us-citation' => Sax2pats::Citation,
       'claim' => Sax2pats::Claim,
-      'inventor' => Sax2pats::Inventor
+      'inventor' => Sax2pats::Inventor,
+      'classification-cpc' => Sax2pats::CPCClassification,
+      'classification-ipcr' => Sax2pats::IPCClassification
     }
 
     NESTED_TEXT_TAGS = {
@@ -151,7 +157,8 @@ module Sax2pats
           'number-of-claims' => :number_of_claims,
           'kind' => :kind,
           'abstract' => :abstract,
-          'description' => :description
+          'description' => :description,
+          'category' => :category
         }
       end
     end
@@ -188,6 +195,47 @@ module Sax2pats
         else
 
         end
+      end
+    end
+
+    class IPCClassificationVersion
+      include EntityVersion
+
+      def attrs_map
+        {
+          'date' => :version_date,
+          'classification-level' => :classification_level,
+          'section' => :section,
+          'class' => :cclass,
+          'subclass' => :subclass,
+          'main-group' => :main_group,
+          'subgroup' => :subgroup,
+          'symbol-position' => :symbol_position,
+          'action-date' => :action_date,
+          'country' => :generating_office_country,
+          'classification-status' => :classification_status,
+          'classification-data-source' => :classification_data_source
+        }
+      end
+    end
+
+    class CPCClassificationVersion
+      include EntityVersion
+
+      def attrs_map
+        {
+          'date' => :version_date,
+          'section' => :section,
+          'class' => :cclass,
+          'subclass' => :subclass,
+          'main-group' => :main_group,
+          'subgroup' => :subgroup,
+          'symbol-position' => :symbol_position,
+          'action-date' => :action_date,
+          'country' => :generating_office_country,
+          'classification-status' => :classification_status,
+          'classification-data-source' => :classification_data_source
+        }
       end
     end
   end
