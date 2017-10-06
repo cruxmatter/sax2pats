@@ -34,8 +34,8 @@ RSpec.describe Sax2pats do
 
     it 'patent classifications' do
       expect(@patents.first.classifications.size).to eq 4
-      expect(@patents.first.classifications.first["classification-level"]).to eq "A"
-      expect(@patents.first.classifications.first["section"]).to eq "H"
+      expect(@patents.first.classifications.first.classification_level).to eq "A"
+      expect(@patents.first.classifications.first.section).to eq "H"
     end
 
     it 'drawings' do

@@ -7,19 +7,29 @@ module Sax2pats
     attr_accessor :version_date,
                   :classification_level,
                   :section,
-                  :class,
+                  :cclass,
                   :subclass,
                   :main_group,
                   :subgroup,
                   :symbol_position,
                   :action_date,
-                  :generating_country,
+                  :generating_office_country,
                   :classification_status,
                   :classification_data_source
   end
 
   class CPCClassification < Classification
-
+    attr_accessor :version_date,
+                  :section,
+                  :cclass,
+                  :subclass,
+                  :main_group,
+                  :subgroup,
+                  :symbol_position,
+                  :action_date,
+                  :generating_office_country,
+                  :classification_status,
+                  :classification_data_source
   end
 
   class LocarnoClassification < Classification

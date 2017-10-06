@@ -180,7 +180,7 @@ module Sax2pats
 
     def initialize_entity
       @entity_class = Sax2pats::Patent
-      @entity = Patent.new
+      @entity = @entity_class.new
       @version_reader = @xml_version.version_reader(@entity_class)
     end
 
@@ -195,6 +195,10 @@ module Sax2pats
         @entity.inventors << @current_child_reader.entity
       when klass == Sax2pats::Drawing
         @entity.drawings << @current_child_reader.entity
+      when klass == Sax2pats::IPCClassification
+        @entity.classifications << @current_child_reader.entity
+      when klass == Sax2pats::CPCClassification
+        @entity.classifications << @current_child_reader.entity
       else
       end
     end
@@ -204,7 +208,9 @@ module Sax2pats
         Sax2pats::Claim => ClaimReader,
         Sax2pats::Citation => CitationReader,
         Sax2pats::Drawing => DrawingReader,
-        Sax2pats::Inventor => InventorReader
+        Sax2pats::Inventor => InventorReader,
+        Sax2pats::IPCClassification => IPCClassificationReader,
+        Sax2pats::CPCClassification => CPCClassificationReader
       }
     end
   end
@@ -214,7 +220,7 @@ module Sax2pats
 
     def initialize_entity
       @entity_class = Sax2pats::Claim
-      @entity = Claim.new
+      @entity = @entity_class.new
       @version_reader = @xml_version.version_reader(@entity_class)
     end
   end
@@ -224,7 +230,7 @@ module Sax2pats
 
     def initialize_entity
       @entity_class = Sax2pats::Citation
-      @entity = Citation.new
+      @entity = @entity_class.new
       @version_reader = @xml_version.version_reader(@entity_class)
     end
   end
@@ -234,7 +240,7 @@ module Sax2pats
 
     def initialize_entity
       @entity_class = Sax2pats::Inventor
-      @entity = Inventor.new
+      @entity = @entity_class.new
       @version_reader = @xml_version.version_reader(@entity_class)
     end
   end
@@ -244,7 +250,27 @@ module Sax2pats
 
     def initialize_entity
       @entity_class = Sax2pats::Drawing
-      @entity = Drawing.new
+      @entity = @entity_class.new
+      @version_reader = @xml_version.version_reader(@entity_class)
+    end
+  end
+
+  class IPCClassificationReader
+    include EntityReader
+
+    def initialize_entity
+      @entity_class = Sax2pats::IPCClassification
+      @entity = @entity_class.new
+      @version_reader = @xml_version.version_reader(@entity_class)
+    end
+  end
+
+  class CPCClassificationReader
+    include EntityReader
+
+    def initialize_entity
+      @entity_class = Sax2pats::CPCClassification
+      @entity = @entity_class.new
       @version_reader = @xml_version.version_reader(@entity_class)
     end
   end
