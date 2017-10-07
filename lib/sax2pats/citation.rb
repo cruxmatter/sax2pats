@@ -6,6 +6,8 @@ module Sax2pats
                   :name,
                   :date,
                   :kind,
-                  :doc_number
+                  :doc_number,
+                  :classification_cpc_text,
+                  :classification_national
   end
 end
