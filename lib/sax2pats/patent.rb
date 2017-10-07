@@ -7,6 +7,7 @@ module Sax2pats
                   :drawings,
                   :tables,
                   :classifications,
+                  :classification_national,
                   :invention_title,
                   :doc_number,
                   :category,
