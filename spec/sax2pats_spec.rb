@@ -32,6 +32,13 @@ RSpec.describe Sax2pats do
       expect(@patents.last.inventors.map(&:last_name)).to match_array(["Afkhami", "Katar", "Rouhana"])
     end
 
+    context 'citations' do
+      it 'citations' do
+        expect(@patents.first.citations.size).to eq 6
+        expect(@patents.first.citations.first.doc_number).to eq '8607306'
+      end
+    end
+
     it 'patent classifications' do
       expect(@patents.first.classifications.size).to eq 4
       expect(@patents.first.classifications.first["classification-level"]).to eq "A"

@@ -41,7 +41,7 @@ module Sax2pats
     end
   end
 
-  class XMLVersion4_2
+  class XMLVersion4_5
     include XMLVersion
 
     ELEMENT_ROOTS = {
