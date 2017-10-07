@@ -45,6 +45,13 @@ RSpec.describe Sax2pats do
       end
     end
 
+    context 'citations' do
+      it 'citations' do
+        expect(@patents.first.citations.size).to eq 6
+        expect(@patents.first.citations.first.doc_number).to eq '8607306'
+      end
+    end
+
     it 'drawings' do
       expect(@patents.last.drawings.size).to eq 10
       expect(@patents.last.drawings.first.figure[:id]).to eq 'Fig-EMI-D00000'

@@ -8,7 +8,7 @@ module Sax2pats
 
     def initialize(patent_handler)
       @patent_handler = patent_handler
-      @xml_version = Sax2pats::XMLVersion4_2.new
+      @xml_version = Sax2pats::XMLVersion4_5.new
     end
 
     def start_element(tag_name)
@@ -89,12 +89,15 @@ module Sax2pats
       raise NotImplementedError
     end
 
-    def start_element(tag_name)
-      @active_tags.push(tag_name)
-      entity = @xml_version.entity_root(@active_tags)
+    def entity_child_reader(entity)
       unless entity.nil? || child_readers[entity].nil?
         @current_child_reader = child_readers[entity].new(@xml_version)
       end
+    end
+
+    def start_element(tag_name)
+      @active_tags.push(tag_name)
+      @current_child_reader ||= entity_child_reader(@xml_version.entity_root(@active_tags))
       if @current_child_reader.nil?
         start_entity_attr(tag_name)
       else
@@ -166,9 +169,7 @@ module Sax2pats
       @active_tags.pop
     end
 
-    def finish_child(tag_name)
-
-    end
+    def finish_child(tag_name); end
 
     def child_readers
       {}
@@ -235,6 +236,21 @@ module Sax2pats
       @entity_class = Sax2pats::Citation
       @entity = @entity_class.new
       @version_reader = @xml_version.version_reader(@entity_class)
+    end
+
+    def finish_child(tag_name)
+      klass = @current_child_reader.entity.class
+      case
+      when klass == Sax2pats::NationalClassification
+        @entity.classification_national = @current_child_reader.entity
+      else
+      end
+    end
+
+    def child_readers
+      {
+        Sax2pats::NationalClassification => NationalClassificationReader
+      }
     end
   end
 
