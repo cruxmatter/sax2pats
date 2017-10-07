@@ -1,4 +1,5 @@
 require "spec_helper"
+# require 'pry'
 
 RSpec.describe Sax2pats do
   it "has a version number" do
@@ -32,10 +33,16 @@ RSpec.describe Sax2pats do
       expect(@patents.last.inventors.map(&:last_name)).to match_array(["Afkhami", "Katar", "Rouhana"])
     end
 
-    it 'patent classifications' do
-      expect(@patents.first.classifications.size).to eq 4
-      expect(@patents.first.classifications.first.classification_level).to eq "A"
-      expect(@patents.first.classifications.first.section).to eq "H"
+    context 'classifications' do
+      it 'national classification' do
+        expect(@patents.first.classification_national.main_classification).to eq "726  6"
+      end
+
+      it 'other classifications' do
+        expect(@patents.first.classifications.size).to eq 4
+        expect(@patents.first.classifications.first.classification_level).to eq "A"
+        expect(@patents.first.classifications.first.section).to eq "H"
+      end
     end
 
     it 'drawings' do

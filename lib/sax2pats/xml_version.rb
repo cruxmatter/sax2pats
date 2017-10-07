@@ -39,6 +39,8 @@ module Sax2pats
         self.class::IPCClassificationVersion.new
       when entity_class.eql?(Sax2pats::CPCClassification)
         self.class::CPCClassificationVersion.new
+      when entity_class.eql?(Sax2pats::NationalClassification)
+        self.class::NationalClassificationVersion.new
       else
 
       end
@@ -54,7 +56,8 @@ module Sax2pats
       'claim' => Sax2pats::Claim,
       'inventor' => Sax2pats::Inventor,
       'classification-cpc' => Sax2pats::CPCClassification,
-      'classification-ipcr' => Sax2pats::IPCClassification
+      'classification-ipcr' => Sax2pats::IPCClassification,
+      'classification-national' => Sax2pats::NationalClassification
     }
 
     NESTED_TEXT_TAGS = {
@@ -201,6 +204,11 @@ module Sax2pats
     class IPCClassificationVersion
       include EntityVersion
 
+    end
+
+    class IPCClassificationVersion
+      include EntityVersion
+
       def attrs_map
         {
           'date' => :version_date,
@@ -235,6 +243,18 @@ module Sax2pats
           'country' => :generating_office_country,
           'classification-status' => :classification_status,
           'classification-data-source' => :classification_data_source
+        }
+      end
+    end
+
+    class NationalClassificationVersion
+      include EntityVersion
+
+      def attrs_map
+        {
+          'country' => :country,
+          'main-classification' => :main_classification,
+          'further-classification' => :further_classification
         }
       end
     end

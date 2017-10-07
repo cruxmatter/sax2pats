@@ -199,6 +199,8 @@ module Sax2pats
         @entity.classifications << @current_child_reader.entity
       when klass == Sax2pats::CPCClassification
         @entity.classifications << @current_child_reader.entity
+      when klass == Sax2pats::NationalClassification
+        @entity.classification_national = @current_child_reader.entity
       else
       end
     end
@@ -210,7 +212,8 @@ module Sax2pats
         Sax2pats::Drawing => DrawingReader,
         Sax2pats::Inventor => InventorReader,
         Sax2pats::IPCClassification => IPCClassificationReader,
-        Sax2pats::CPCClassification => CPCClassificationReader
+        Sax2pats::CPCClassification => CPCClassificationReader,
+        Sax2pats::NationalClassification => NationalClassificationReader
       }
     end
   end
@@ -270,6 +273,16 @@ module Sax2pats
 
     def initialize_entity
       @entity_class = Sax2pats::CPCClassification
+      @entity = @entity_class.new
+      @version_reader = @xml_version.version_reader(@entity_class)
+    end
+  end
+
+  class NationalClassificationReader
+    include EntityReader
+
+    def initialize_entity
+      @entity_class = Sax2pats::NationalClassification
       @entity = @entity_class.new
       @version_reader = @xml_version.version_reader(@entity_class)
     end
