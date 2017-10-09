@@ -9,26 +9,22 @@ module Sax2pats
                   :classifications,
                   :classification_national,
                   :invention_title,
-                  :doc_number,
-                  :category,
-                  :date,
+                  :publication_reference,
+                  :application_reference,
                   :number_of_claims,
-                  :kind,
                   :abstract,
                   :description
 
     def initialize
       @abstract = ''
       @description = ''
+      @publication_reference = {}
+      @application_reference = {}
       @inventors = []
       @citations = []
       @claims = []
       @drawings = []
       @classifications = []
-    end
-
-    def publication_reference
-      [@doc_number, @date, @country, @kind]
     end
   end
 end
