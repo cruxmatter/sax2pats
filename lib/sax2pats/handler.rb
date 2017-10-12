@@ -1,5 +1,5 @@
 module Sax2pats
-  class Processor < Ox::Sax
+  class Handler < Ox::Sax
 
     attr_accessor :current_tag,
                   :current_reader,
