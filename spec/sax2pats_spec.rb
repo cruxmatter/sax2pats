@@ -10,10 +10,10 @@ RSpec.describe Sax2pats do
     before(:each) do
       @patents = []
       patent_handler = Proc.new{|pt| @patents << pt  }
-      processor = Sax2pats::Processor.new(patent_handler)
+      handler = Sax2pats::Handler.new(patent_handler)
       filename = File.join(File.dirname(__FILE__), 'test.xml')
       File.open(filename) do |f|
-        Ox.sax_parse(processor, f)
+        Ox.sax_parse(handler, f)
       end
     end
 
