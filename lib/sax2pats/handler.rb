@@ -54,6 +54,7 @@ module Sax2pats
     end
 
     def start_element(tag_name)
+      @root_tag ||= tag_name
       unless tag_name.eql? @root_tag
         @text.concat("<#{tag_name}>")
       end
@@ -77,6 +78,7 @@ module Sax2pats
                   :active_tags,
                   :current_child_reader,
                   :current_text_reader,
+                  :current_hash_reader,
                   :version_reader
 
     def initialize(xml_version)
@@ -106,7 +108,6 @@ module Sax2pats
       @version_reader.custom_start(@entity, tag_name)
       if @xml_version.nested_text?(@entity_class, tag_name)
         @current_text_reader = TextReader.new(@xml_version)
-        @current_text_reader.root_tag = tag_name
       end
       unless @current_text_reader.nil?
         @current_text_reader.start_element(tag_name)
@@ -143,8 +144,8 @@ module Sax2pats
       @version_reader.custom_end(@entity, tag_name)
       unless @current_text_reader.nil?
         @current_text_reader.end_element(tag_name)
-        if @xml_version.nested_text?(@entity_class, tag_name)
-          entity_attr = @version_reader.attrs_map[tag_name]
+        entity_attr = @version_reader.attrs_map[tag_name]
+        unless entity_attr.nil?
           if entity_attr && @entity.respond_to?(entity_attr)
             @entity.send("#{entity_attr}=", @current_text_reader.text)
           end
