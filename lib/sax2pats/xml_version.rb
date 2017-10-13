@@ -143,16 +143,44 @@ module Sax2pats
 
     class PatentVersion
       include EntityVersion
+      attr_accessor :current_hash
 
       def attrs_map
         {
           'invention-title' => :invention_title,
-          'date' => :date,
           'number-of-claims' => :number_of_claims,
-          'kind' => :kind,
           'abstract' => :abstract,
-          'description' => :description
+          'description' => :description,
+          'publication-reference' => :publication_reference,
+          'application-reference' => :application_reference
         }
+      end
+
+      def custom_start(patent, tag_name)
+        if tag_name.eql?('publication-reference')
+          patent.publication_reference = {}
+          @current_hash = patent.publication_reference
+        elsif tag_name.eql?('application-reference')
+          patent.application_reference = {}
+          @current_hash = patent.application_reference
+        elsif @current_hash && tag_name.eql?('document-id')
+          @current_hash['document-id'] = {}
+          @current_hash = @current_hash['document-id']
+        end
+      end
+
+      def custom_value(patent, tag_name, value)
+        if @current_hash && ['doc-number', 'country', 'kind', 'date'].include?(tag_name)
+          @current_hash[tag_name] = value.as_s
+        end
+      end
+
+      def custom_end(patent, tag_name)
+        if tag_name.eql?('publication-reference')
+          @current_hash = nil
+        elsif tag_name.eql?('application-reference')
+          @current_hash = nil
+        end
       end
     end
 
@@ -186,7 +214,6 @@ module Sax2pats
         when tag_name.eql?('img')
           drawing.img = @img
         else
-
         end
       end
     end
