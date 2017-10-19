@@ -4,7 +4,17 @@ module Sax2pats
 
 end
 
+require 'saxerator'
 require 'ox'
+
+# monkey patch for uspto patent xml
+Saxerator::Adapters::Ox.class_eval do
+  def error(message, _, _)
+    # ignore error messages because DOCTYPE
+    # is repeated after entities
+  end
+end
+
 require 'sax2pats/entity'
 require 'sax2pats/citation'
 require 'sax2pats/patent'

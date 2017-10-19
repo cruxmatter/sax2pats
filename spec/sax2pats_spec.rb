@@ -1,5 +1,5 @@
 require "spec_helper"
-require "pry"
+require 'pry'
 
 RSpec.describe Sax2pats do
   it "has a version number" do
@@ -11,11 +11,10 @@ RSpec.describe Sax2pats do
     before(:each) do
       @patents = []
       patent_handler = Proc.new{|pt| @patents << pt  }
-      handler = Sax2pats::Handler.new(patent_handler)
       filename = File.join(File.dirname(__FILE__), 'test.xml')
-      File.open(filename) do |f|
-        Ox.sax_parse(handler, f)
-      end
+      f = File.new(filename)
+      h = Sax2pats::Handler.new(f, patent_handler)
+      h.parse_patents
     end
 
     it 'parsed all patents' do
