@@ -13,10 +13,10 @@ module Sax2pats
                   :number_of_claims,
                   :abstract,
                   :description
+    attr_reader :description_text
 
     def initialize
       @abstract = ''
-      @description = ''
       @publication_reference = {}
       @application_reference = {}
       @inventors = []
@@ -24,6 +24,14 @@ module Sax2pats
       @claims = []
       @drawings = []
       @classifications = []
+      @description_text = ""
+    end
+
+    def get_description_text(description_element)
+      @description_text.concat(description_element.text.to_s)
+      description_element.elements.each do |element|
+        get_description_text(element)
+      end
     end
   end
 end

@@ -9,7 +9,7 @@ module Sax2pats
       @parser = Saxerator.parser(file) do |config|
         config.adapter = :ox
         config.put_attributes_in_hash!
-        config.document_fragment_tags = ['abstract']
+        config.document_fragment_tags = ['abstract', 'description', 'othercit']
       end
       @patent_handler = patent_handler
       @xml_version = Sax2pats::XMLVersion4_5.new
