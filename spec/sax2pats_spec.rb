@@ -40,7 +40,7 @@ RSpec.describe Sax2pats do
       end
 
       it 'patent description' do
-        expect(@patents.last.description.include?('Computer program code for carrying out operations for aspects of the present inventive subject matter may be written in any combination of one or more programming languages, including an object oriented programming language such as Java, Smalltalk, C++ or the like and conventional procedural programming languages, such as the “C” programming language or similar programming languages.')).to be_truthy
+        expect(@patents.last.description.to_s.include?('Computer program code for carrying out operations for aspects of the present inventive subject matter may be written in any combination of one or more programming languages, including an object oriented programming language such as Java, Smalltalk, C++ or the like and conventional procedural programming languages, such as the “C” programming language or similar programming languages.')).to be_truthy
       end
 
       it 'patent inventors' do
@@ -73,7 +73,7 @@ RSpec.describe Sax2pats do
 
     context 'citation' do
       it 'citation' do
-        expect(@patents.first.citations.first.doc_number).to eq '8607306'
+        expect(@patents.first.citations.first.document_id.fetch('doc-number')).to eq '8607306'
       end
     end
 
@@ -86,7 +86,7 @@ RSpec.describe Sax2pats do
 
     context 'drawing' do
       it 'drawing' do
-        expect(@patents.last.drawings.first.figure[:id]).to eq 'Fig-EMI-D00000'
+        expect(@patents.last.drawings.first.figure['id']).to eq 'Fig-EMI-D00000'
       end
     end
   end
