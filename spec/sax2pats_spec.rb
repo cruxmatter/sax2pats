@@ -22,6 +22,10 @@ RSpec.describe Sax2pats do
     end
 
     context 'patent' do
+      it 'has xml version' do
+        expect(@patents.first.from_version).to eq '4.5'
+      end
+
       it 'element attributes' do
         patent = @patents.first
         expect(patent.invention_title).to eq 'Authenticating a user device to access services based on a device ID'
