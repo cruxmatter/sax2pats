@@ -3,23 +3,39 @@ module Sax2pats
     include Entity
   end
 
+  class NationalClassification < Classification
+    attr_accessor :country, :main_classification, :further_classification
+  end
+
   class IPCClassification < Classification
     attr_accessor :version_date,
                   :classification_level,
                   :section,
-                  :class,
+                  :cclass,
                   :subclass,
                   :main_group,
                   :subgroup,
                   :symbol_position,
                   :action_date,
-                  :generating_country,
+                  :generating_office_country,
                   :classification_status,
                   :classification_data_source
   end
 
   class CPCClassification < Classification
-
+    attr_accessor :version_date,
+                  :section,
+                  :cclass,
+                  :subclass,
+                  :main_group,
+                  :subgroup,
+                  :symbol_position,
+                  :action_date,
+                  :generating_office_country,
+                  :classification_status,
+                  :classification_data_source,
+                  :classification_value,
+                  :scheme_origination_code
   end
 
   class LocarnoClassification < Classification

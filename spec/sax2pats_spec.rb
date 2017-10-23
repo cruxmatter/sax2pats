@@ -77,10 +77,15 @@ RSpec.describe Sax2pats do
       end
     end
 
-    context 'classification' do
-      it 'classification' do
-        expect(@patents.first.classifications.first["classification-level"]).to eq "A"
-        expect(@patents.first.classifications.first["section"]).to eq "H"
+    context 'classifications' do
+      it 'national classification' do
+        pat = @patents.detect{|patent| patent.publication_reference['document-id']['doc-number'] == '09537663'}
+        expect(pat.classification_national.main_classification).to eq "455411"
+      end
+
+      it 'other classifications' do
+        expect(@patents.first.classifications.first.classification_level).to eq "A"
+        expect(@patents.first.classifications.first.section).to eq "H"
       end
     end
 
