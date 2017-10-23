@@ -55,71 +55,86 @@ module Sax2pats
         end
       end
 
-      def handle_entities(entities, entity_version_class, entity_list)
-        read_and_assign_entity = Proc.new do |e|
-          entity_version = entity_version_class.new
-          entity_version.read_hash(e)
-          @entity.send("#{entity_list}").send("<<", entity_version.entity)
-        end
+      def read_and_assign_entity(entity_hash, entity_version_class, entity_list)
+        entity_version = entity_version_class.new
+        entity_version.read_hash(entity_hash)
+        @entity.send("#{entity_list}").send("<<", entity_version.entity)
+      end
 
+      def basic_handler(entity_version_class, entity_list)
+        Proc.new{|entity_hash| read_and_assign_entity(entity_hash, entity_version_class, entity_list) }
+      end
+
+      def find_entities(entities, handler)
         if entities.kind_of?(Saxerator::Builder::HashElement)
-          read_and_assign_entity.call(entities)
+          handler.call(entities)
         elsif entities.kind_of?(Saxerator::Builder::ArrayElement)
           entities.each do |entities_hash|
-            read_and_assign_entity.call(entities_hash)
+            handler.call(entities_hash)
           end
         end
       end
 
-      def citations(citations)
-        citation_version = Proc.new do |tag|
-          if tag == 'patcit'
-            PatentCitationVersion.new
-          elsif tag == 'nplcit'
-            OtherCitationVersion.new
+      def inventors(patent_hash)
+        inventors_parent = patent_hash.dig('us-bibliographic-data-grant', 'us-parties', 'inventors', 'inventor')
+        unless inventors_parent.nil?
+          find_entities(inventors_parent, basic_handler(InventorVersion, :inventors))
+        end
+      end
+
+      def citations(patent_hash)
+        citations_parent = patent_hash.dig('us-bibliographic-data-grant', 'us-references-cited', 'us-citation')
+        unless citations_parent.nil?
+          citation_handler = Proc.new do |citation_hash|
+            if citation_hash.has_key?('patcit')
+              read_and_assign_entity(citation_hash, PatentCitationVersion, :citations)
+            elsif citation_hash.has_key?('nplcit')
+              read_and_assign_entity(citation_hash, OtherCitationVersion, :citations)
+            end
           end
+          find_entities(citations_parent, citation_handler)
+        end
+      end
+
+      def claims(patent_hash)
+        claims_parent = patent_hash.dig('claims', 'claim')
+        unless claims_parent.nil?
+          find_entities(claims_parent, basic_handler(ClaimVersion, :claims))
+        end
+      end
+
+      def classifications(patent_hash)
+        ipcr_parent = patent_hash.dig('us-bibliographic-data-grant', 'classifications-ipcr', 'classification-ipcr')
+        unless ipcr_parent.nil?
+          find_entities(ipcr_parent, basic_handler(IPCClassificationVersion, :classifications))
         end
 
-        if citations.kind_of?(Saxerator::Builder::HashElement)
-          cv = citation_version.call(citations_hash.keys.first)
-          cv.read_hash(citations)
-          @entity.citations << cv.entity
-        elsif citations.kind_of?(Saxerator::Builder::ArrayElement)
-          citations.each do |citations_hash|
-            cv = citation_version.call(citations_hash.keys.first)
-            cv.read_hash(citations_hash)
-            @entity.citations << cv.entity
+        cpc_parent = patent_hash.dig('us-bibliographic-data-grant', 'classifications-cpc')
+        unless cpc_parent.nil?
+          unless cpc_parent.dig('main-cpc', 'classification-cpc').nil?
+            find_entities(cpc_parent.dig('main-cpc', 'classification-cpc'), basic_handler(CPCClassificationVersion, :classifications))
           end
+          unless cpc_parent.dig('further-cpc', 'classification-cpc').nil?
+            find_entities(cpc_parent.dig('further-cpc', 'classification-cpc'), basic_handler(CPCClassificationVersion, :classifications))
+          end
+        end
+      end
+
+      def drawings(patent_hash)
+        drawing_parent = patent_hash.dig('drawings', 'figure')
+        unless drawing_parent.nil?
+          find_entities(drawing_parent, basic_handler(DrawingVersion, :drawings))
         end
       end
 
       def read_hash(patent_hash)
         @entity = Sax2pats::Patent.new
         assign(patent_hash)
-        biblio = patent_hash['us-bibliographic-data-grant']
-        unless biblio.dig('us-references-cited', 'us-citation').nil?
-          citations(biblio.dig('us-references-cited', 'us-citation'))
-        end
-        unless biblio.dig('us-parties', 'inventors', 'inventor').nil?
-          handle_entities(biblio.dig('us-parties', 'inventors', 'inventor'), InventorVersion, :inventors)
-        end
-        unless patent_hash["claims"]['claim'].nil?
-          handle_entities(patent_hash["claims"]['claim'], ClaimVersion, :claims)
-        end
-        unless patent_hash.dig('drawings', 'figure').nil?
-          handle_entities(patent_hash.dig('drawings', 'figure'), DrawingVersion, :drawings)
-        end
-        unless biblio.dig('classifications-ipcr', 'classification-ipcr').nil?
-          handle_entities(biblio.dig('classifications-ipcr', 'classification-ipcr'), IPCClassificationVersion, :classifications)
-        end
-        unless biblio.dig('classifications-cpc').nil?
-          unless biblio.dig('classifications-cpc', 'main-cpc').nil?
-            handle_entities(biblio.dig('classifications-cpc', 'main-cpc', 'classification-cpc'), CPCClassificationVersion, :classifications)
-          end
-          unless biblio.dig('classifications-cpc', 'further-cpc').nil?
-            handle_entities(biblio.dig('classifications-cpc', 'further-cpc', 'classification-cpc'), CPCClassificationVersion, :classifications)
-          end
-        end
+        citations(patent_hash)
+        inventors(patent_hash)
+        claims(patent_hash)
+        drawings(patent_hash)
+        classifications(patent_hash)
       end
     end
 
