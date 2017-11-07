@@ -42,11 +42,9 @@ module Sax2pats
         biblio = patent_hash['us-bibliographic-data-grant']
         @entity.publication_reference = biblio['publication-reference']
         @entity.application_reference = biblio['application-reference']
-        @entity.invention_title = biblio.fetch('invention-title').detect do |t|
-          t.kind_of?(Saxerator::Builder::StringElement)
-        end
+        @entity.invention_title = biblio.fetch('invention-title').detect{|el| el.kind_of?(Saxerator::Builder::StringElement)}
         @entity.number_of_claims = biblio['number-of-claims']
-        @entity.abstract = patent_hash.fetch('abstract').to_s
+        @entity.abstract = patent_hash.fetch('abstract')
         @entity.description = patent_hash.fetch('description')
         unless biblio.dig('us-field-of-classification-search', 'classification-national').nil?
           national = NationalClassificationVersion.new
@@ -128,7 +126,7 @@ module Sax2pats
       end
 
       def read_hash(patent_hash)
-        @entity = Sax2pats::Patent.new
+        @entity = Sax2pats::Patent.new('4.5')
         assign(patent_hash)
         citations(patent_hash)
         inventors(patent_hash)
@@ -153,7 +151,7 @@ module Sax2pats
       end
 
       def read_hash(citation)
-        @entity = Sax2pats::PatentCitation.new
+        @entity = Sax2pats::PatentCitation.new('4.5')
         assign(citation)
       end
     end
@@ -166,7 +164,7 @@ module Sax2pats
       end
 
       def read_hash(citation)
-        @entity = Sax2pats::OtherCitation.new
+        @entity = Sax2pats::OtherCitation.new('4.5')
         assign(citation.fetch('nplcit'))
       end
     end
@@ -181,7 +179,7 @@ module Sax2pats
       end
 
       def read_hash(inventor)
-        @entity = Sax2pats::Inventor.new
+        @entity = Sax2pats::Inventor.new('4.5')
         assign(inventor)
       end
     end
@@ -191,10 +189,11 @@ module Sax2pats
 
       def assign(claim)
         @entity.claim_id = claim['id']
+        @entity.text_hash = claim['claim-text']
       end
 
       def read_hash(claim_hash)
-        @entity = Sax2pats::Claim.new
+        @entity = Sax2pats::Claim.new('4.5')
         assign(claim_hash)
       end
     end
@@ -208,7 +207,7 @@ module Sax2pats
       end
 
       def read_hash(drawings)
-        @entity = Sax2pats::Drawing.new
+        @entity = Sax2pats::Drawing.new('4.5')
         if drawings.kind_of?(Saxerator::Builder::HashElement)
           assign(drawings)
         elsif drawings.kind_of?(Saxerator::Builder::ArrayElement)
@@ -246,7 +245,7 @@ module Sax2pats
       end
 
       def read_hash(ipc_classifications)
-        @entity = Sax2pats::IPCClassification.new
+        @entity = Sax2pats::IPCClassification.new('4.5')
         if ipc_classifications.kind_of?(Saxerator::Builder::HashElement)
           assign(ipc_classifications)
         elsif ipc_classifications.kind_of?(Saxerator::Builder::ArrayElement)
@@ -267,7 +266,7 @@ module Sax2pats
       end
 
       def read_hash(cpc_classifications)
-        @entity = Sax2pats::CPCClassification.new
+        @entity = Sax2pats::CPCClassification.new('4.5')
         if cpc_classifications.kind_of?(Saxerator::Builder::HashElement)
           assign(cpc_classifications)
         elsif cpc_classifications.kind_of?(Saxerator::Builder::ArrayElement)
@@ -291,7 +290,7 @@ module Sax2pats
       end
 
       def read_hash(classification)
-        @entity = Sax2pats::NationalClassification.new
+        @entity = Sax2pats::NationalClassification.new('4.5')
         if classification.kind_of?(Saxerator::Builder::HashElement)
           assign(classification)
         elsif classification.kind_of?(Saxerator::Builder::ArrayElement)
