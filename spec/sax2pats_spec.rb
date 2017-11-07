@@ -40,11 +40,11 @@ RSpec.describe Sax2pats do
       end
 
       it 'patent abstract' do
-        expect(@patents.first.abstract.include?('A first device may receive a first session token from a second device;')).to be_truthy
+        expect(@patents.first.abstract_text.include?('A first device may receive a first session token from a second device;')).to be_truthy
       end
 
       it 'patent description' do
-        expect(@patents.last.description.to_s.include?('Computer program code for carrying out operations for aspects of the present inventive subject matter may be written in any combination of one or more programming languages, including an object oriented programming language such as Java, Smalltalk, C++ or the like and conventional procedural programming languages, such as the “C” programming language or similar programming languages.')).to be_truthy
+        expect(@patents.last.description_text.include?('Computer program code for carrying out operations for aspects of the present inventive subject matter may be written in any combination of one or more programming languages, including an object oriented programming language such as Java, Smalltalk, C++ or the like and conventional procedural programming languages, such as the “C” programming language or similar programming languages.')).to be_truthy
       end
 
       it 'patent inventors' do
