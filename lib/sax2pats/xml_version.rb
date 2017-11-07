@@ -1,192 +1,302 @@
 module Sax2pats
   module EntityVersion
-    def attrs_map
-      {}
+    attr_reader :entity
+
+    def read_hash(entity_hash)
+      raise NotImplementedError
     end
-
-    def custom_start(entity, tag_name); end
-
-    def custom_value(entity, tag_name, value); end
-
-    def custom_attr(entity, tag_name, name, value); end
-
-    def custom_end(entity, tag_name); end
   end
 
   module XMLVersion
-
-    def entity_root(active_tags)
+    def patent_tag(mode)
       raise NotImplementedError
     end
 
-    def nested_text?(entity, tag_name)
+    def process_patent_grant(patent_grant_hash)
       raise NotImplementedError
-    end
-
-    def version_reader(entity_class)
-      case
-      when entity_class.eql?(Sax2pats::Claim)
-        self.class::ClaimVersion.new
-      when entity_class.eql?(Sax2pats::Citation)
-        self.class::CitationVersion.new
-      when entity_class.eql?(Sax2pats::Patent)
-        self.class::PatentVersion.new
-      when entity_class.eql?(Sax2pats::Inventor)
-        self.class::InventorVersion.new
-      when entity_class.eql?(Sax2pats::Drawing)
-        self.class::DrawingVersion.new
-      else
-
-      end
     end
   end
 
   class XMLVersion4_5
     include XMLVersion
 
-    ELEMENT_ROOTS = {
-      'us-patent-grant' => Sax2pats::Patent,
-      'us-citation' => Sax2pats::Citation,
-      'claim' => Sax2pats::Claim,
-      'inventor' => Sax2pats::Inventor
-    }
-
-    NESTED_TEXT_TAGS = {
-      Sax2pats::Patent => ['abstract', 'description']
-    }
-
-    def entity_root(active_tags)
-      if active_tags.include?('drawings') && active_tags.last.eql?('figure')
-        Sax2pats::Drawing
+    def patent_tag(type)
+      case
+      when type == :grant
+        :'us-patent-grant'
       else
-        ELEMENT_ROOTS[active_tags.last]
+        :'us-patent-application'
       end
     end
 
-    def nested_text?(entity, tag_name)
-      NESTED_TEXT_TAGS.include?(entity) && NESTED_TEXT_TAGS[entity].include?(tag_name)
+    def process_patent_grant(patent_grant_hash)
+      pv = PatentGrantVersion.new
+      pv.read_hash(patent_grant_hash)
+      pv.entity
     end
 
-    class CitationVersion
+    class PatentGrantVersion
       include EntityVersion
 
-      def attrs_map
-        {
-          'category' => :category,
-          'name' => :name,
-          'date' => :date,
-          'doc-number' => :doc_number,
-          'country' => :country,
-          'kind' => :kind
-        }
+      def assign(patent_hash)
+        biblio = patent_hash['us-bibliographic-data-grant']
+        @entity.publication_reference = biblio['publication-reference']
+        @entity.application_reference = biblio['application-reference']
+        @entity.invention_title = biblio.fetch('invention-title').detect{|el| el.kind_of?(Saxerator::Builder::StringElement)}
+        @entity.number_of_claims = biblio['number-of-claims']
+        @entity.abstract = patent_hash.fetch('abstract')
+        @entity.description = patent_hash.fetch('description')
+        unless biblio.dig('us-field-of-classification-search', 'classification-national').nil?
+          national = NationalClassificationVersion.new
+          national.read_hash(biblio.dig('us-field-of-classification-search', 'classification-national'))
+          @entity.classification_national = national.entity
+        end
+      end
+
+      def read_and_assign_entity(entity_hash, entity_version_class, entity_list)
+        entity_version = entity_version_class.new
+        entity_version.read_hash(entity_hash)
+        @entity.send("#{entity_list}").send("<<", entity_version.entity)
+      end
+
+      def basic_handler(entity_version_class, entity_list)
+        Proc.new{|entity_hash| read_and_assign_entity(entity_hash, entity_version_class, entity_list) }
+      end
+
+      def find_entities(entities, handler)
+        if entities.kind_of?(Saxerator::Builder::HashElement)
+          handler.call(entities)
+        elsif entities.kind_of?(Saxerator::Builder::ArrayElement)
+          entities.each do |entities_hash|
+            handler.call(entities_hash)
+          end
+        end
+      end
+
+      def inventors(patent_hash)
+        inventors_parent = patent_hash.dig('us-bibliographic-data-grant', 'us-parties', 'inventors', 'inventor')
+        unless inventors_parent.nil?
+          find_entities(inventors_parent, basic_handler(InventorVersion, :inventors))
+        end
+      end
+
+      def citations(patent_hash)
+        citations_parent = patent_hash.dig('us-bibliographic-data-grant', 'us-references-cited', 'us-citation')
+        unless citations_parent.nil?
+          citation_handler = Proc.new do |citation_hash|
+            if citation_hash.has_key?('patcit')
+              read_and_assign_entity(citation_hash, PatentCitationVersion, :citations)
+            elsif citation_hash.has_key?('nplcit')
+              read_and_assign_entity(citation_hash, OtherCitationVersion, :citations)
+            end
+          end
+          find_entities(citations_parent, citation_handler)
+        end
+      end
+
+      def claims(patent_hash)
+        claims_parent = patent_hash.dig('claims', 'claim')
+        unless claims_parent.nil?
+          find_entities(claims_parent, basic_handler(ClaimVersion, :claims))
+        end
+      end
+
+      def classifications(patent_hash)
+        ipcr_parent = patent_hash.dig('us-bibliographic-data-grant', 'classifications-ipcr', 'classification-ipcr')
+        unless ipcr_parent.nil?
+          find_entities(ipcr_parent, basic_handler(IPCClassificationVersion, :classifications))
+        end
+
+        cpc_parent = patent_hash.dig('us-bibliographic-data-grant', 'classifications-cpc')
+        unless cpc_parent.nil?
+          unless cpc_parent.dig('main-cpc', 'classification-cpc').nil?
+            find_entities(cpc_parent.dig('main-cpc', 'classification-cpc'), basic_handler(CPCClassificationVersion, :classifications))
+          end
+          unless cpc_parent.dig('further-cpc', 'classification-cpc').nil?
+            find_entities(cpc_parent.dig('further-cpc', 'classification-cpc'), basic_handler(CPCClassificationVersion, :classifications))
+          end
+        end
+      end
+
+      def drawings(patent_hash)
+        drawing_parent = patent_hash.dig('drawings', 'figure')
+        unless drawing_parent.nil?
+          find_entities(drawing_parent, basic_handler(DrawingVersion, :drawings))
+        end
+      end
+
+      def read_hash(patent_hash)
+        @entity = Sax2pats::Patent.new('4.5')
+        assign(patent_hash)
+        citations(patent_hash)
+        inventors(patent_hash)
+        claims(patent_hash)
+        drawings(patent_hash)
+        classifications(patent_hash)
+      end
+    end
+
+    class PatentCitationVersion
+      include EntityVersion
+
+      def assign(citation_hash)
+        @entity.category = citation_hash["category"]
+        @entity.document_id = citation_hash["patcit"]["document-id"]
+        @entity.classification_cpc_text = citation_hash["classification-cpc-text"]
+        unless citation_hash["classification-national"].nil?
+          national = NationalClassificationVersion.new
+          national.read_hash(citation_hash["classification-national"])
+          @entity.classification_national = national.entity
+        end
+      end
+
+      def read_hash(citation)
+        @entity = Sax2pats::PatentCitation.new('4.5')
+        assign(citation)
+      end
+    end
+
+    class OtherCitationVersion
+      include EntityVersion
+
+      def assign(citation_hash)
+        @entity.citation_value = citation_hash.fetch('othercit')
+      end
+
+      def read_hash(citation)
+        @entity = Sax2pats::OtherCitation.new('4.5')
+        assign(citation.fetch('nplcit'))
       end
     end
 
     class InventorVersion
       include EntityVersion
 
-      def attrs_map
-        {
-          'city' => 'city',
-          'state' => 'state',
-          'country' => 'country',
-          'first-name' => 'first_name',
-          'last-name' => 'last_name'
-        }
+      def assign(inventor_hash)
+        @entity.address = inventor_hash["addressbook"]["address"]
+        @entity.first_name = inventor_hash["addressbook"]["first-name"]
+        @entity.last_name = inventor_hash["addressbook"]["last-name"]
+      end
+
+      def read_hash(inventor)
+        @entity = Sax2pats::Inventor.new('4.5')
+        assign(inventor)
       end
     end
 
     class ClaimVersion
       include EntityVersion
-      attr_accessor :claim_text
 
-      def custom_start(claim, tag_name)
-        case
-        when tag_name.eql?('claim-text')
-          @claim_text = ""
-        else
-
-        end
+      def assign(claim)
+        @entity.claim_id = claim['id']
+        @entity.text_hash = claim['claim-text']
       end
 
-      def custom_value(claim, tag_name, value)
-        case
-        when tag_name.eql?('claim-text')
-          @claim_text.concat(value.as_s)
-        when tag_name.eql?('claim-ref')
-          @claim_text.concat(value.as_s)
-        else
-
-        end
-      end
-
-      def custom_attr(claim, tag_name, name, value)
-        case
-        when name.eql?(:idref)
-          claim.refs << value
-        when name.eql?(:id)
-          claim.claim_id = value
-        else
-
-        end
-      end
-
-      def custom_end(claim, tag_name)
-        case
-        when tag_name.eql?('claim-text')
-          claim.text_elements << @claim_text
-        else
-
-        end
-      end
-    end
-
-    class PatentVersion
-      include EntityVersion
-
-      def attrs_map
-        {
-          'invention-title' => :invention_title,
-          'date' => :date,
-          'number-of-claims' => :number_of_claims,
-          'kind' => :kind,
-          'abstract' => :abstract,
-          'description' => :description
-        }
+      def read_hash(claim_hash)
+        @entity = Sax2pats::Claim.new('4.5')
+        assign(claim_hash)
       end
     end
 
     class DrawingVersion
       include EntityVersion
-      attr_accessor :figure, :img
 
-      def attrs_map
-        {
-          'figure' => :figure,
-          'img' => :img
-        }
+      def assign(drawing_hash)
+        @entity.img = drawing_hash.delete('img')
+        @entity.figure = drawing_hash
       end
 
-      def custom_attr(drawing, tag_name, name, value)
-        case
-        when tag_name.eql?('figure')
-          @figure = {} if @figure.nil?
-          @figure[name] = value
-        when tag_name.eql?('img')
-          @img = {} if @img.nil?
-          @img[name] = value
-        else
+      def read_hash(drawings)
+        @entity = Sax2pats::Drawing.new('4.5')
+        if drawings.kind_of?(Saxerator::Builder::HashElement)
+          assign(drawings)
+        elsif drawings.kind_of?(Saxerator::Builder::ArrayElement)
+          drawings.each do |drawing_hash|
+            assign(drawing_hash)
+          end
         end
       end
+    end
 
-      def custom_end(drawing, tag_name)
-        case
-        when tag_name.eql?('figure')
-          drawing.figure = @figure
-        when tag_name.eql?('img')
-          drawing.img = @img
-        else
+    class ClassificationVersion
+      include EntityVersion
 
+      def assign(classification)
+        @entity.generating_office_country = classification.dig('generating-office', 'country')
+        @entity.section = classification['section']
+        @entity.cclass = classification['class']
+        @entity.subclass = classification['subclass']
+        @entity.main_group = classification['main-group']
+        @entity.subgroup = classification['subgroup']
+        @entity.symbol_position = classification['symbol-position']
+        @entity.action_date = classification.dig('action-date', 'date')
+        @entity.classification_status = classification['classification-status']
+        @entity.classification_data_source = classification['classification-data-source']
+      end
+    end
+
+    class IPCClassificationVersion < ClassificationVersion
+      include EntityVersion
+
+      def assign(ipc)
+        @entity.version_date = ipc.fetch('ipc-version-indicator', 'date')
+        @entity.classification_level = ipc['classification-level']
+        super(ipc)
+      end
+
+      def read_hash(ipc_classifications)
+        @entity = Sax2pats::IPCClassification.new('4.5')
+        if ipc_classifications.kind_of?(Saxerator::Builder::HashElement)
+          assign(ipc_classifications)
+        elsif ipc_classifications.kind_of?(Saxerator::Builder::ArrayElement)
+          ipc_classifications.each do |ipc_classification_hash|
+            assign(ipc_classification_hash)
+          end
+        end
+      end
+    end
+
+    class CPCClassificationVersion < ClassificationVersion
+      include EntityVersion
+
+      def assign(cpc)
+        @entity.version_date = cpc.fetch('cpc-version-indicator', 'date')
+        @entity.classification_value = cpc['classification-value']
+        super(cpc)
+      end
+
+      def read_hash(cpc_classifications)
+        @entity = Sax2pats::CPCClassification.new('4.5')
+        if cpc_classifications.kind_of?(Saxerator::Builder::HashElement)
+          assign(cpc_classifications)
+        elsif cpc_classifications.kind_of?(Saxerator::Builder::ArrayElement)
+          cpc_classifications.each do |cpc_classification_hash|
+            assign(cpc_classification_hash)
+          end
+        end
+      end
+    end
+
+    class LocarnoClassificationVersion
+      include EntityVersion
+    end
+
+    class NationalClassificationVersion
+      include EntityVersion
+
+      def assign(classification)
+        @entity.country = classification['country']
+        @entity.main_classification = classification['main-classification']
+      end
+
+      def read_hash(classification)
+        @entity = Sax2pats::NationalClassification.new('4.5')
+        if classification.kind_of?(Saxerator::Builder::HashElement)
+          assign(classification)
+        elsif classification.kind_of?(Saxerator::Builder::ArrayElement)
+          classification.each do |classification_hash|
+            assign(classification_hash)
+          end
         end
       end
     end

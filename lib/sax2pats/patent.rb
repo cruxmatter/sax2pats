@@ -7,17 +7,19 @@ module Sax2pats
                   :drawings,
                   :tables,
                   :classifications,
+                  :classification_national,
                   :invention_title,
-                  :doc_number,
-                  :date,
+                  :publication_reference,
+                  :application_reference,
                   :number_of_claims,
-                  :kind,
                   :abstract,
                   :description
+    attr_reader :description_text, :abstract_text
 
-    def initialize
-      @abstract = ''
-      @description = ''
+    def initialize(from_version)
+      super(from_version)
+      @publication_reference = {}
+      @application_reference = {}
       @inventors = []
       @citations = []
       @claims = []
@@ -25,8 +27,12 @@ module Sax2pats
       @classifications = []
     end
 
-    # def publication_reference
-    #   [self.doc_number, self.date, self.country, self.kind]
-    # end
+    def abstract_text
+      @abstract_text ||= Sax2pats::Entity.doc_as_text(@abstract)
+    end
+
+    def description_text
+      @description_text ||= Sax2pats::Entity.doc_as_text(@description)
+    end
   end
 end
