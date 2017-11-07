@@ -3,7 +3,8 @@ module Sax2pats
     include Entity
     attr_accessor :img, :figure, :description
 
-    def initialize
+    def initialize(from_version)
+      super(from_version)
       @img = {}
       @figure = {}
     end
