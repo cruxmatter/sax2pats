@@ -42,7 +42,7 @@ module Sax2pats
         biblio = patent_hash['us-bibliographic-data-grant']
         @entity.publication_reference = biblio['publication-reference']
         @entity.application_reference = biblio['application-reference']
-        @entity.invention_title = biblio.fetch('invention-title').detect{|el| el.kind_of?(Saxerator::Builder::StringElement)}
+        @entity.invention_title = biblio.fetch('invention-title').to_s
         @entity.number_of_claims = biblio['number-of-claims']
         @entity.abstract = patent_hash.fetch('abstract')
         @entity.description = patent_hash.fetch('description')
@@ -189,7 +189,7 @@ module Sax2pats
 
       def assign(claim)
         @entity.claim_id = claim['id']
-        @entity.text_hash = claim['claim-text']
+        @entity.text_element = claim['claim-text']
       end
 
       def read_hash(claim_hash)
