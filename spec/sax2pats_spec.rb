@@ -60,6 +60,10 @@ RSpec.describe Sax2pats do
         expect(@patents.map{|pt| pt.claims.size}).to match_array(@patents.map{|pt| pt.number_of_claims.to_i})
       end
 
+      it 'patent claim refs' do
+        expect(@patents.first.claims.map(&:refs)).to match_array([[],["CLM-00001"],["CLM-00001"],["CLM-00001"],["CLM-00001"],["CLM-00001"],["CLM-00001"],["CLM-00001"],[],["CLM-00009"],["CLM-00009"],["CLM-00009"],["CLM-00009"],["CLM-00009"],["CLM-00009"],[],["CLM-00016"],["CLM-00016"],["CLM-00016"],["CLM-00016"]])
+      end
+
       it 'patent classifications' do
         expect(@patents.first.classifications.size).to eq 4
       end

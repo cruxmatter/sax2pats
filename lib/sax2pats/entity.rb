@@ -6,11 +6,11 @@ module Sax2pats
       @from_version = from_version
     end
 
-    def self.hash_as_text(text_element)
+    def self.element_as_text(text_element)
       if text_element.kind_of?(Saxerator::Builder::HashElement)
-        text_element.values.map{|v| Sax2pats::Entity.hash_as_text(v).strip.chomp }.join(' ')
+        text_element.values.map{|v| Sax2pats::Entity.element_as_text(v).strip.chomp }.join(' ')
       elsif text_element.kind_of?(Saxerator::Builder::ArrayElement) || text_element.kind_of?(Array)
-        text_element.map{|e| Sax2pats::Entity.hash_as_text(e).strip.chomp }.join(' ')
+        text_element.map{|e| Sax2pats::Entity.element_as_text(e).strip.chomp }.join(' ')
       elsif text_element.kind_of?(Saxerator::Builder::StringElement) || text_element.kind_of?(String)
         text_element.to_s
       end
