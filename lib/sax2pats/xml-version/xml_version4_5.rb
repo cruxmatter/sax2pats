@@ -1,24 +1,6 @@
 module Sax2pats
-  module EntityVersion
-    attr_reader :entity
-
-    def read_hash(entity_hash)
-      raise NotImplementedError
-    end
-  end
-
-  module XMLVersion
-    def patent_tag(mode)
-      raise NotImplementedError
-    end
-
-    def process_patent_grant(patent_grant_hash)
-      raise NotImplementedError
-    end
-  end
-
   class XMLVersion4_5
-    include XMLVersion
+    include Sax2pats::XMLVersion
 
     def patent_tag(type)
       case
@@ -36,7 +18,7 @@ module Sax2pats
     end
 
     class PatentGrantVersion
-      include EntityVersion
+      include Sax2pats::EntityVersion
 
       def assign(patent_hash)
         biblio = patent_hash['us-bibliographic-data-grant']
@@ -137,7 +119,7 @@ module Sax2pats
     end
 
     class PatentCitationVersion
-      include EntityVersion
+      include Sax2pats::EntityVersion
 
       def assign(citation_hash)
         @entity.category = citation_hash["category"]
@@ -157,7 +139,7 @@ module Sax2pats
     end
 
     class OtherCitationVersion
-      include EntityVersion
+      include Sax2pats::EntityVersion
 
       def assign(citation_hash)
         @entity.citation_value = citation_hash.fetch('othercit')
@@ -170,7 +152,7 @@ module Sax2pats
     end
 
     class InventorVersion
-      include EntityVersion
+      include Sax2pats::EntityVersion
 
       def assign(inventor_hash)
         @entity.address = inventor_hash["addressbook"]["address"]
@@ -185,7 +167,7 @@ module Sax2pats
     end
 
     class ClaimVersion
-      include EntityVersion
+      include Sax2pats::EntityVersion
 
       def assign(claim)
         @entity.claim_id = claim['id']
@@ -199,7 +181,7 @@ module Sax2pats
     end
 
     class DrawingVersion
-      include EntityVersion
+      include Sax2pats::EntityVersion
 
       def assign(drawing_hash)
         @entity.img = drawing_hash.delete('img')
@@ -219,7 +201,7 @@ module Sax2pats
     end
 
     class ClassificationVersion
-      include EntityVersion
+      include Sax2pats::EntityVersion
 
       def assign(classification)
         @entity.generating_office_country = classification.dig('generating-office', 'country')
@@ -236,7 +218,7 @@ module Sax2pats
     end
 
     class IPCClassificationVersion < ClassificationVersion
-      include EntityVersion
+      include Sax2pats::EntityVersion
 
       def assign(ipc)
         @entity.version_date = ipc.fetch('ipc-version-indicator', 'date')
@@ -257,7 +239,7 @@ module Sax2pats
     end
 
     class CPCClassificationVersion < ClassificationVersion
-      include EntityVersion
+      include Sax2pats::EntityVersion
 
       def assign(cpc)
         @entity.version_date = cpc.fetch('cpc-version-indicator', 'date')
@@ -278,11 +260,11 @@ module Sax2pats
     end
 
     class LocarnoClassificationVersion
-      include EntityVersion
+      include Sax2pats::EntityVersion
     end
 
     class NationalClassificationVersion
-      include EntityVersion
+      include Sax2pats::EntityVersion
 
       def assign(classification)
         @entity.country = classification['country']
