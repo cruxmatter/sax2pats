@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+file=$(realpath $1)
+cd $3
+awk '/\<\?xml/{x=prefix i; i++;}{print >> x; close(x)}' prefix="$2" $file

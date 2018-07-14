@@ -42,7 +42,9 @@ module Sax2pats
       end
 
       def basic_handler(entity_version_class, entity_list)
-        Proc.new{|entity_hash| read_and_assign_entity(entity_hash, entity_version_class, entity_list) }
+        Proc.new do |entity_hash|
+          read_and_assign_entity(entity_hash, entity_version_class, entity_list)
+        end
       end
 
       def find_entities(entities, handler)
