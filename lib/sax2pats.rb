@@ -8,6 +8,7 @@ require 'saxerator'
 require 'ox'
 
 require 'sax2pats/entity/entity'
+require 'sax2pats/entity/doc_entity'
 require 'sax2pats/entity/citation'
 require 'sax2pats/entity/patent'
 require 'sax2pats/entity/classification'

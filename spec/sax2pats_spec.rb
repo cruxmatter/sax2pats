@@ -1,4 +1,5 @@
 require "spec_helper"
+require 'pry'
 
 RSpec.describe Sax2pats do
   it "has a version number" do
@@ -49,13 +50,11 @@ RSpec.describe Sax2pats do
       end
 
       it 'patent abstract' do
-        expect(patent_1.abstract_text.include?(
-          'A first device may receive a first session token from a second device;'
-          )).to be_truthy
+        expect(@patents[1].abstract.as_doc).to eq '<abstract id="abstract"><p id="p-0001" num="0000">The present invention relates to information security and discloses a method of establishing public key cryptographic protocols against the quantum computational attack. The method includes the following steps: definition of an infinite non-abelian group G; choosing two private keys in G by two entities; a second entity computing y, and sending y to a first entity; the first entity computing x and z, and sending (x, z) to the second entity; the second entity computing w and v, and sending (w, v) to the first entity; the first entity computing u, and sending u to the second entity; and the first entity computing K<sub>A</sub>, and the second entity computing K<sub>B</sub>, thereby reaching a shared key K=K<sub>A</sub>=K<sub>B</sub>. The security guarantee of a public key cryptographic algorithm created by the present invention relies on unsolvability of a problem, and has an advantage of free of the quantum computational attack.</p></abstract>'
       end
 
       it 'patent description' do
-        expect(patent_2.description_text.include?('Computer program code for carrying out operations for aspects of the present inventive subject matter may be written in any combination of one or more programming languages, including an object oriented programming language such as Java, Smalltalk, C++ or the like and conventional procedural programming languages, such as the “C” programming language or similar programming languages.')).to be_truthy
+        expect(patent_2.description.as_doc.include?('Computer program code for carrying out operations for aspects of the present inventive subject matter may be written in any combination of one or more programming languages, including an object oriented programming language such as Java, Smalltalk, C++ or the like and conventional procedural programming languages, such as the “C” programming language or similar programming languages.')).to be_truthy
       end
 
       it 'patent inventors' do
@@ -81,6 +80,16 @@ RSpec.describe Sax2pats do
 
       it 'patent drawings' do
         expect(patent_2.drawings.size).to eq 10
+      end
+    end
+
+    context 'claim' do
+      subject do
+        patent_2.claims.first
+      end
+
+      it 'as doc' do
+        expect(subject.as_doc).to eq '<claim id="CLM-00001" num="00001"><claim-text>1. A method for data transmission, the method comprising: <claim-text>determining, by a master network device, to transmit data from the master network device to a plurality of client network devices;</claim-text><claim-text>generating, by the master network device, a data frame including a payload, the payload including a first plurality of symbols arranged in a pattern that is known to the plurality of client network devices; and</claim-text><claim-text>allocating, by the master network device, at least one symbol of the first plurality of symbols to each of the plurality of client network devices, wherein at least a first symbol of the first plurality of symbols is allocated only to a first client network device of the plurality of client network devices.</claim-text></claim-text></claim>'
       end
     end
 
@@ -114,8 +123,18 @@ RSpec.describe Sax2pats do
     end
 
     context 'drawing' do
-      it 'drawing' do
-        expect(patent_2.drawings.first.figure['id']).to eq 'Fig-EMI-D00000'
+      subject do
+        patent_2.drawings.first
+      end
+
+      it 'drawings' do
+        expect(subject.id).to eq 'Fig-EMI-D00000'
+      end
+
+      it 'drawing doc' do
+        # TODO original doc has no closing tag for img
+        original = '<figure id="Fig-EMI-D00000" num="00000"><img id="EMI-D00000" he="171.45mm" wi="267.04mm" file="US09537792-20170103-D00000.TIF" alt="embedded image" img-content="drawing" img-format="tif"></img></figure>'
+        expect(subject.as_doc).to eq original
       end
     end
   end

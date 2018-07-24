@@ -26,8 +26,12 @@ module Sax2pats
         @entity.application_reference = biblio['application-reference']
         @entity.invention_title = biblio.fetch('invention-title').to_s
         @entity.number_of_claims = biblio['number-of-claims']
-        @entity.abstract = patent_hash.fetch('abstract')
-        @entity.description = patent_hash.fetch('description')
+        @entity.abstract = Sax2pats::PatentAbstract.new(
+          element: patent_hash.fetch('abstract')
+        )
+        @entity.description = Sax2pats::PatentDescription.new(
+          element: patent_hash.fetch('description')
+        )
         unless biblio.dig('us-field-of-classification-search', 'classification-national').nil?
           national = NationalClassificationVersion.new
           national.read_hash(biblio.dig('us-field-of-classification-search', 'classification-national'))
@@ -173,7 +177,7 @@ module Sax2pats
 
       def assign(claim)
         @entity.claim_id = claim['id']
-        @entity.text_element = claim['claim-text']
+        @entity.element = claim
       end
 
       def read_hash(claim_hash)
@@ -185,9 +189,10 @@ module Sax2pats
     class DrawingVersion
       include Sax2pats::EntityVersion
 
-      def assign(drawing_hash)
-        @entity.img = drawing_hash.delete('img')
-        @entity.figure = drawing_hash
+      def assign(drawing_element)
+        @entity.element = drawing_element
+        @entity.img = drawing_element['img']
+        @entity.id = drawing_element&.attributes['id']
       end
 
       def read_hash(drawings)
@@ -195,8 +200,8 @@ module Sax2pats
         if drawings.kind_of?(Saxerator::Builder::HashElement)
           assign(drawings)
         elsif drawings.kind_of?(Saxerator::Builder::ArrayElement)
-          drawings.each do |drawing_hash|
-            assign(drawing_hash)
+          drawings.each do |drawing|
+            assign(drawing)
           end
         end
       end
