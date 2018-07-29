@@ -17,11 +17,9 @@ module Sax2pats
       end
 
       if element.kind_of?(Saxerator::Builder::HashElement)
-        element.keys.each do |k|
-          return element.keys.map{ |k| collect_refs(element[k]) }.flatten.compact
-        end
+        element.keys.map{ |k| collect_refs(element[k]) }.flatten.compact
       elsif element.kind_of?(Saxerator::Builder::ArrayElement)
-        return element.map{ |e| collect_refs(e) }.flatten.compact
+        element.map{ |e| collect_refs(e) }.flatten.compact
       end
     end
   end
