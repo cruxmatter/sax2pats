@@ -1,4 +1,20 @@
 module Sax2pats
+  class PatentAbstract
+    include Sax2pats::DocEntity
+
+    def initialize(element: nil)
+      @element = element
+    end
+  end
+
+  class PatentDescription
+    include Sax2pats::DocEntity
+
+    def initialize(element: nil)
+      @element = element
+    end
+  end
+
   class Patent
     include Entity
     attr_accessor :inventors,
@@ -27,12 +43,12 @@ module Sax2pats
       @classifications = []
     end
 
-    def abstract_text
-      @abstract_text ||= Sax2pats::Entity.doc_as_text(@abstract)
-    end
-
-    def description_text
-      @description_text ||= Sax2pats::Entity.doc_as_text(@description)
-    end
+    # def abstract_text
+    #   @abstract_text ||= Sax2pats::Entity.doc_as_text(@abstract)
+    # end
+    #
+    # def description_text
+    #   @description_text ||= Sax2pats::Entity.doc_as_text(@description)
+    # end
   end
 end
