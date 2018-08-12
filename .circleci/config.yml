@@ -13,8 +13,10 @@ jobs:
     steps:
       - checkout
 
-      - command: |
-        ls -al
+      - run:
+          name: testing
+          command: |
+            ls -al
 
       - restore_cache:
           keys:
