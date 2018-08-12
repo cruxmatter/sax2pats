@@ -13,11 +13,6 @@ jobs:
     steps:
       - checkout
 
-      - run:
-          name: testing
-          command: |
-            ls -al
-
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "Gemfile.lock" }}
