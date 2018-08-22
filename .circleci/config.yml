@@ -22,7 +22,7 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            bundle install --path vendor/bundle
+            bundle install --jobs=4 --retry=3 --path vendor/bundle
 
       - save_cache:
           paths:
@@ -34,11 +34,11 @@ jobs:
           command: |
             mkdir /tmp/test-results
 
-            bundle exec rspec --format progress \
+            bundle exec rspec --profile 10 \
                             --format RspecJunitFormatter \
                             --out /tmp/test-results/rspec.xml \
                             --format progress \
-                            $(circleci tests glob "spec/**/*_spec.rb" | circleci tests split)
+                            $(circleci tests glob "spec/**/*_spec.rb")
 
       # collect reports
       - store_test_results:
