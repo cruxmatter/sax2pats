@@ -1,5 +1,4 @@
 require "spec_helper"
-require 'pry'
 
 RSpec.describe Sax2pats do
   it "has a version number" do
