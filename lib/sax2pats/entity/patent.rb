@@ -42,13 +42,5 @@ module Sax2pats
       @drawings = []
       @classifications = []
     end
-
-    # def abstract_text
-    #   @abstract_text ||= Sax2pats::Entity.doc_as_text(@abstract)
-    # end
-    #
-    # def description_text
-    #   @description_text ||= Sax2pats::Entity.doc_as_text(@description)
-    # end
   end
 end

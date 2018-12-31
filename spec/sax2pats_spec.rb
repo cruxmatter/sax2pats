@@ -7,7 +7,7 @@ RSpec.describe Sax2pats do
 
   context 'SAX parse USPTO Patent XML' do
 
-    before(:each) do
+    before(:all) do
       @patents = []
       patent_handler = Proc.new{|pt| @patents << pt  }
       filename = File.join(File.dirname(__FILE__), 'test.xml')
@@ -85,6 +85,10 @@ RSpec.describe Sax2pats do
     context 'claim' do
       subject do
         patent_2.claims.first
+      end
+
+      it 'id' do
+        expect(subject.claim_id).to eq 'CLM-00001'
       end
 
       it 'as doc' do
