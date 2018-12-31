@@ -42,9 +42,8 @@ module Sax2pats
                  close_tag
         end
 
-        open_tag + text_element.map do |k,v|
-          self.doc_body(v)
-        end.join + close_tag
+        open_tag + text_element.reject{|k,v| text_element.attributes.include?(k) }
+          .map{ |k,v| self.doc_body(v) }.join + close_tag
       end
     end
   end
