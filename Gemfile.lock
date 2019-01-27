@@ -1,6 +1,6 @@
 GIT
   remote: git@github.com:doublestranded/saxerator.git
-  revision: 213939643fbd77c8f3f6619f9b916bc92de8aca7
+  revision: d4d07c983d3158d3a8685b172fa7f6d6ddc0a63c
   specs:
     saxerator (0.9.8)
 
