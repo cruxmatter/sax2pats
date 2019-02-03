@@ -8,7 +8,6 @@ PATH
   remote: .
   specs:
     sax2pats (0.1.0)
-      ox
 
 GEM
   remote: https://rubygems.org/
