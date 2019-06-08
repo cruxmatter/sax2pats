@@ -6,7 +6,7 @@ module Sax2pats
                   :xml_version,
                   :patent_types
 
-    def initialize(file, patent_handler, patent_types: ['utility'])
+    def initialize(file, patent_handler, patent_types: [])
       @parser = Saxerator.parser(file) do |config|
         config.adapter = :ox
         config.put_attributes_in_hash!
