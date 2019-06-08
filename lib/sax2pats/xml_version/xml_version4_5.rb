@@ -11,6 +11,14 @@ module Sax2pats
       end
     end
 
+    def patent_type(patent_grant_hash)
+      patent_grant_hash.dig(
+        'us-bibliographic-data-grant',
+        'application-reference',
+        'appl-type'
+      )
+    end
+
     def process_patent_grant(patent_grant_hash)
       pv = PatentGrantVersion.new
       pv.read_hash(patent_grant_hash)
@@ -192,7 +200,7 @@ module Sax2pats
       def assign(drawing_element)
         @entity.element = drawing_element
         @entity.img = drawing_element['img']
-        @entity.id = drawing_element&.attributes['id']
+        @entity.id = drawing_element.attributes['id']
       end
 
       def read_hash(drawings)
