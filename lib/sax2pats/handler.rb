@@ -6,7 +6,7 @@ module Sax2pats
                   :xml_version,
                   :patent_types
 
-    def initialize(file, patent_handler, patent_types: [])
+    def initialize(file, patent_handler, patent_types: nil)
       @parser = Saxerator.parser(file) do |config|
         config.adapter = :ox
         config.put_attributes_in_hash!
@@ -18,7 +18,7 @@ module Sax2pats
 
     def parse_patents
       @parser.for_tag(@xml_version.patent_tag(:grant)).each do |patent_grant_hash|
-        next unless @patent_types.include? @xml_version.patent_type(patent_grant_hash)
+        next unless @patent_types.nil? || @patent_types.include?(@xml_version.patent_type(patent_grant_hash))
         patent = @xml_version.process_patent_grant(patent_grant_hash)
         @patent_handler.call(patent)
       end
