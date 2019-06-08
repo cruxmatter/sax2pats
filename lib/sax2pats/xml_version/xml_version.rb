@@ -12,6 +12,10 @@ module Sax2pats
       raise NotImplementedError
     end
 
+    def patent_type(patent_grant_hash)
+      raise NotImplementedError
+    end
+
     def process_patent_grant(patent_grant_hash)
       raise NotImplementedError
     end
