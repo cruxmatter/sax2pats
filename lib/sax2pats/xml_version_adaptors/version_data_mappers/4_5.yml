@@ -1,0 +1,41 @@
+xml:
+  patent_grant_tag: us-patent-grant
+  patent_application_tag: us-patent-application
+patent:
+  patent_type:
+    - us-bibliographic-data-grant
+    - application-reference
+    - appl-type
+  publication_reference:
+    - us-bibliographic-data-grant
+    - publication-reference
+  application_reference:
+    - us-bibliographic-data-grant
+    - application-reference
+  invention_title:
+    - us-bibliographic-data-grant
+    - invention-title
+  number_of_claims:
+    - us-bibliographic-data-grant
+    - number-of-claims
+  abstract: abstract
+  description: description
+  classification_national:
+    - us-bibliographic-data-grant
+    - us-field-of-classification-search
+    - classification-national
+  inventors:
+    - us-bibliographic-data-grant
+    - us-parties
+    - inventors
+    - inventor
+inventor:
+  address:
+    - addressbook
+    - address
+  first_name:
+    - addressbook
+    - first-name
+  last_name:
+    - addressbook
+    - last-name

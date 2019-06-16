@@ -29,7 +29,8 @@ module Sax2pats
                   :application_reference,
                   :number_of_claims,
                   :abstract,
-                  :description
+                  :description,
+                  :patent_type
     attr_reader :description_text, :abstract_text
 
     def initialize(from_version)
