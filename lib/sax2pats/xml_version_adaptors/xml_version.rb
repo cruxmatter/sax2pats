@@ -5,9 +5,12 @@ module Sax2pats
     attr_accessor :entity_attribute_hash
 
     def initialize(entity_hash)
-      @entity_attribute_hash = self.class.version_mapper.keys.map do |attr|
-        [attr, entity_hash.dig(*self.class.version_mapper[attr])]
-      end.to_h
+      @entity_attribute_hash = entity_hash
+      self.class.version_mapper.keys.map do |attr|
+        @entity_attribute_hash[attr] =
+          entity_hash.dig(*self.class.version_mapper[attr]) ||
+          entity_hash[attr]
+      end
     end
 
     def enumerate_child_entities(child_entities)
@@ -46,6 +49,17 @@ module Sax2pats
       const_set('InventorVersion', inventor_version_class)
     end
 
+    def self.claim_version_entity
+      claim_version_class = Class.new(Object) do
+        include EntityVersion
+
+        def self.version_mapper
+          @@version_mapper.fetch('claim')
+        end
+      end
+      const_set('ClaimVersion', claim_version_class)
+    end
+
     def self.included(mod)
       root = File.expand_path ''
       File.open(
@@ -61,6 +75,7 @@ module Sax2pats
 
       patent_version_entity
       inventor_version_entity
+      claim_version_entity
     end
 
     def patent_tag(mode)

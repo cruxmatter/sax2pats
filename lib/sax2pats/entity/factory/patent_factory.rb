@@ -44,5 +44,17 @@ class PatentFactory < EntityFactory
           child_entity_hash
         ).inventor
     end
+
+    @entity_version_adaptor
+      .enumerate_child_entities(
+        entities_data_hash.fetch('claims')
+      ) do |child_entity_hash|
+
+      @entity.claims <<
+        ClaimFactory.new(
+          @xml_version_adaptor,
+          child_entity_hash
+        ).claim
+    end
   end
 end

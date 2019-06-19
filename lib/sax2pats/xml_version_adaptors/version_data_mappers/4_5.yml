@@ -29,6 +29,9 @@ patent:
     - us-parties
     - inventors
     - inventor
+  claims:
+    - claims
+    - claim
 inventor:
   address:
     - addressbook
@@ -39,3 +42,5 @@ inventor:
   last_name:
     - addressbook
     - last-name
+claim:
+  claim_id: id

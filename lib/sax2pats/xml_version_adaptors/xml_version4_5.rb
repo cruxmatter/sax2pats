@@ -6,18 +6,6 @@ module Sax2pats
     include Sax2pats::XMLVersion
 
     # class PatentGrantVersion
-    #   ENTITY_VERSION_KEY = 'patent'.freeze
-    #
-    #   include Sax2pats::XMLVersion::EntityVersion
-    # end
-    #
-    # class InventorVersion
-    #   ENTITY_VERSION_KEY = 'inventor'.freeze
-    #
-    #   include Sax2pats::XMLVersion::EntityVersion
-    # end
-
-    # class PatentGrantVersion
     #
     #   include Sax2pats::EntityVersion
     #
@@ -156,20 +144,6 @@ module Sax2pats
     # #     assign(inventor)
     # #   end
     # # end
-    #
-    # class ClaimVersion
-    #   include Sax2pats::EntityVersion
-    #
-    #   def assign(claim)
-    #     @entity.claim_id = claim['id']
-    #     @entity.element = claim
-    #   end
-    #
-    #   def read_hash(claim_hash)
-    #     @entity = Sax2pats::Claim.new('4.5')
-    #     assign(claim_hash)
-    #   end
-    # end
     #
     # class DrawingVersion
     #   include Sax2pats::EntityVersion

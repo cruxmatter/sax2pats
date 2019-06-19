@@ -11,7 +11,7 @@ class EntityFactory
 
     @entity = entity_class.new(xml_version_adaptor.class::VERSION)
 
-    assign_attributes(data.select { |k, _v| attribute_keys.include? k })
+    assign_attributes(data)
     assign_entities(data)
   end
 
@@ -19,14 +19,14 @@ class EntityFactory
     raise NotImplementedError
   end
 
-  def assign_attributes(attributes_dash_hash)
+  def assign_attributes(attributes_data_hash)
     # TODO types?
-    attributes_dash_hash.each { |k,v| @entity.public_send("#{k}=", v) }
+    attributes_data_hash
+      .select { |k, _v| attribute_keys.include? k }
+      .each { |k,v| @entity.public_send("#{k}=", v) }
   end
 
-  def assign_entities(entities_data_hash)
-    raise NotImplementedError
-  end
+  def assign_entities(entities_data_hash); end
 
   def entity_version_adaptor_class(_xml_version_adaptor_class)
     raise NotImplementedError

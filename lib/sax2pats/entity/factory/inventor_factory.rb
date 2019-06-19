@@ -22,6 +22,4 @@ class InventorFactory < EntityFactory
       last_name
     ]
   end
-
-  def assign_entities(entities_data_hash); end
 end
