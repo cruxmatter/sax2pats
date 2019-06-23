@@ -7,12 +7,12 @@ class EntityFactory
       xml_version_adaptor.class
     ).new(data_hash)
 
-    data = @entity_version_adaptor.entity_attribute_hash
+    @entity_data = @entity_version_adaptor.entity_attribute_hash
 
     @entity = entity_class.new(xml_version_adaptor.class::VERSION)
 
-    assign_attributes(data)
-    assign_entities(data)
+    assign_attributes(@entity_data)
+    assign_entities(@entity_data)
   end
 
   def attribute_keys

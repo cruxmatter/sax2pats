@@ -1,23 +1,26 @@
-class ClaimFactory < EntityFactory
+class DrawingFactory < EntityFactory
   def entity_class
-    Sax2pats::Claim
+    Sax2pats::Drawing
   end
 
-  def claim
+  def drawing
     @entity
   end
 
   def entity_version_adaptor_class(xml_version_adaptor_class)
-    xml_version_adaptor_class::ClaimVersion
+    xml_version_adaptor_class::DrawingVersion
   end
 
   def attribute_keys
-    ['claim_id']
+    %w[
+      id
+      img
+      description
+    ]
   end
 
   def assign_attributes(attributes_data_hash)
     @entity.element = attributes_data_hash.dup
-    @entity.element.delete_if { |k, _v| attribute_keys.include?(k) }
     super(attributes_data_hash)
   end
 end

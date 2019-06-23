@@ -27,37 +27,17 @@ module Sax2pats
   module XMLVersion
     attr_accessor :version_mapper
 
-    def self.patent_version_entity
-      patent_version_class = Class.new(Object) do
+    def self.define_version_entity(entity_key, class_name)
+      version_class = Class.new(Object) do
         include EntityVersion
 
-        def self.version_mapper
-          @@version_mapper.fetch('patent')
-        end
+        # TODO: allow custom block
       end
-      const_set('PatentGrantVersion', patent_version_class)
-    end
 
-    def self.inventor_version_entity
-      inventor_version_class = Class.new(Object) do
-        include EntityVersion
-
-        def self.version_mapper
-          @@version_mapper.fetch('inventor')
-        end
+      version_class.define_singleton_method(:version_mapper) do
+        @@version_mapper.fetch(entity_key)
       end
-      const_set('InventorVersion', inventor_version_class)
-    end
-
-    def self.claim_version_entity
-      claim_version_class = Class.new(Object) do
-        include EntityVersion
-
-        def self.version_mapper
-          @@version_mapper.fetch('claim')
-        end
-      end
-      const_set('ClaimVersion', claim_version_class)
+      const_set(class_name, version_class)
     end
 
     def self.included(mod)
@@ -73,9 +53,14 @@ module Sax2pats
         )
       ) { |f| @@version_mapper = YAML.safe_load(f) }
 
-      patent_version_entity
-      inventor_version_entity
-      claim_version_entity
+      define_version_entity('patent', 'PatentGrantVersion')
+      define_version_entity('inventor', 'InventorVersion')
+      define_version_entity('claim', 'ClaimVersion')
+      define_version_entity('drawing', 'DrawingVersion')
+      define_version_entity('citation', 'CitationVersion')
+      define_version_entity('cpc_classification', 'CPCClassificationVersion')
+      define_version_entity('ipc_classification', 'IPCClassificationVersion')
+      define_version_entity('national_classification', 'NationalClassificationVersion')
     end
 
     def patent_tag(mode)

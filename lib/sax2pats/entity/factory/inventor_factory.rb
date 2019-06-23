@@ -3,10 +3,6 @@ class InventorFactory < EntityFactory
     Sax2pats::Inventor
   end
 
-  def entity_key
-    'inventor'
-  end
-
   def inventor
     @entity
   end

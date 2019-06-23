@@ -21,7 +21,6 @@ module Sax2pats
         patent_type = @xml_version.patent_type(patent_grant_hash).to_sym
         next unless @patent_types.nil? || (@patent_types || []).include?(patent_type)
         patent = PatentFactory.new(@xml_version, patent_grant_hash).patent
-        binding.pry
         @patent_handler.call(patent)
       end
     end
