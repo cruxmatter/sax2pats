@@ -32,6 +32,12 @@ RSpec.describe Sax2pats do
     end
 
     describe 'patent' do
+      let(:abstract_patent) do
+        @patents.detect do |patent|
+          patent.publication_reference['document-id']['doc-number'] == '09537660'
+        end
+      end
+
       it 'has xml version' do
         expect(patent_1.from_version).to eq '4.5'
       end
@@ -56,9 +62,14 @@ RSpec.describe Sax2pats do
         end
       end
 
-      it 'patent abstract' do
+      it 'patent abstract doc' do
         expect_abstract_doc = '<abstract id="abstract"><p id="p-0001" num="0000">The present invention relates to information security and discloses a method of establishing public key cryptographic protocols against the quantum computational attack. The method includes the following steps: definition of an infinite non-abelian group G; choosing two private keys in G by two entities; a second entity computing y, and sending y to a first entity; the first entity computing x and z, and sending (x, z) to the second entity; the second entity computing w and v, and sending (w, v) to the first entity; the first entity computing u, and sending u to the second entity; and the first entity computing K<sub>A</sub>, and the second entity computing K<sub>B</sub>, thereby reaching a shared key K=K<sub>A</sub>=K<sub>B</sub>. The security guarantee of a public key cryptographic algorithm created by the present invention relies on unsolvability of a problem, and has an advantage of free of the quantum computational attack.</p></abstract>'
-        expect(@patents[1].abstract.as_doc).to eq expect_abstract_doc
+        expect(abstract_patent.abstract.as_doc).to eq expect_abstract_doc
+      end
+
+      it 'patent abstract text' do
+        expect_abstract_text = 'The present invention relates to information security and discloses a method of establishing public key cryptographic protocols against the quantum computational attack. The method includes the following steps: definition of an infinite non-abelian group G; choosing two private keys in G by two entities; a second entity computing y, and sending y to a first entity; the first entity computing x and z, and sending (x, z) to the second entity; the second entity computing w and v, and sending (w, v) to the first entity; the first entity computing u, and sending u to the second entity; and the first entity computing KA, and the second entity computing KB, thereby reaching a shared key K=KA=KB. The security guarantee of a public key cryptographic algorithm created by the present invention relies on unsolvability of a problem, and has an advantage of free of the quantum computational attack.'
+        expect(abstract_patent.abstract.as_text).to eq expect_abstract_text
       end
 
       it 'patent description' do
