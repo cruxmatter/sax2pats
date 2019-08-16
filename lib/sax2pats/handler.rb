@@ -7,6 +7,7 @@ module Sax2pats
                   :patent_types
 
     def initialize(file, patent_handler, patent_types: nil)
+      @file = file
       @parser = Saxerator.parser(file) do |config|
         config.adapter = :ox
         config.put_attributes_in_hash!
@@ -25,10 +26,19 @@ module Sax2pats
       end
     end
 
+    def doctype
+      e = @file.each_line
+      @doctype = e.take(2).last
+      e.rewind
+      @doctype
+    end
+
     def version
-      # TODO: dynamically look up XML version
-      # TODO: raise error if invalid version
-      '4.5'
+      v = Ox.parse(doctype).nodes.first.value.split(' ')[2].split('-')[3]
+      case v
+      when 'v45'
+        '4.5'
+      end
     end
 
     def version_adaptor_class
