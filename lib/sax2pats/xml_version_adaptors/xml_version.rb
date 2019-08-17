@@ -35,18 +35,6 @@ module Sax2pats
       version_class.define_singleton_method(:version_mapper) do
         version_mapper.fetch(entity_key)
       end
-      version_class.define_method(:patent_tag) do |mode|
-        if mode == :grant
-          version_mapper.dig('xml', 'patent_grant_tag')
-        elsif mode == :application
-          version_mapper.dig('xml', 'patent_application_tag')
-        end
-      end
-      version_class.define_method(:patent_type) do |patent_grant_hash|
-        patent_grant_hash.dig(
-          *version_mapper.dig('patent', 'patent_type')
-        )
-      end
       base.const_set(class_name, version_class)
     end
 
