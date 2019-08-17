@@ -14,10 +14,11 @@ module Sax2pats
       end
       @patent_handler = patent_handler
       @patent_types = patent_types.map(&:to_sym) if patent_types
-      @xml_version = version_adaptor_class.new
+      @xml_version = version_adaptor_class.new if version_adaptor_class
     end
 
     def parse_patents
+      return unless @xml_version
       @parser.for_tag(@xml_version.patent_tag(:grant)).each do |patent_grant_hash|
         patent_type = @xml_version.patent_type(patent_grant_hash).to_sym
         next unless @patent_types.nil? || (@patent_types || []).include?(patent_type)
@@ -38,6 +39,8 @@ module Sax2pats
       case v
       when 'v45'
         '4.5'
+      when 'v41'
+        '4.1'
       end
     end
 
@@ -45,6 +48,8 @@ module Sax2pats
       case version
       when '4.5'
         Sax2pats::XMLVersion4_5
+      when '4.1'
+        Sax2pats::XMLVersion4_1
       end
     end
   end

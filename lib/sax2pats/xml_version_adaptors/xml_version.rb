@@ -25,9 +25,7 @@ module Sax2pats
   end
 
   module XMLVersion
-    attr_accessor :version_mapper
-
-    def self.define_version_entity(entity_key, class_name)
+    def self.define_version_entity(base, version_mapper, entity_key, class_name)
       version_class = Class.new(Object) do
         include EntityVersion
 
@@ -35,13 +33,26 @@ module Sax2pats
       end
 
       version_class.define_singleton_method(:version_mapper) do
-        @@version_mapper.fetch(entity_key)
+        version_mapper.fetch(entity_key)
       end
-      const_set(class_name, version_class)
+      version_class.define_method(:patent_tag) do |mode|
+        if mode == :grant
+          version_mapper.dig('xml', 'patent_grant_tag')
+        elsif mode == :application
+          version_mapper.dig('xml', 'patent_application_tag')
+        end
+      end
+      version_class.define_method(:patent_type) do |patent_grant_hash|
+        patent_grant_hash.dig(
+          *version_mapper.dig('patent', 'patent_type')
+        )
+      end
+      base.const_set(class_name, version_class)
     end
 
-    def self.included(mod)
+    def self.included(base)
       root = File.expand_path ''
+      version_mapper = nil
       File.open(
         File.join(
           root,
@@ -49,32 +60,31 @@ module Sax2pats
           'sax2pats',
           'xml_version_adaptors',
           'version_data_mappers',
-          mod::DATA_MAPPER_FILE
+          base::DATA_MAPPER_FILE
         )
-      ) { |f| @@version_mapper = YAML.safe_load(f) }
+      ) { |f| version_mapper = YAML.safe_load(f) }
 
-      define_version_entity('patent', 'PatentGrantVersion')
-      define_version_entity('inventor', 'InventorVersion')
-      define_version_entity('claim', 'ClaimVersion')
-      define_version_entity('drawing', 'DrawingVersion')
-      define_version_entity('citation', 'CitationVersion')
-      define_version_entity('cpc_classification', 'CPCClassificationVersion')
-      define_version_entity('ipc_classification', 'IPCClassificationVersion')
-      define_version_entity('national_classification', 'NationalClassificationVersion')
-    end
+      define_version_entity(base, version_mapper, 'patent', 'PatentGrantVersion')
+      define_version_entity(base, version_mapper, 'inventor', 'InventorVersion')
+      define_version_entity(base, version_mapper, 'claim', 'ClaimVersion')
+      define_version_entity(base, version_mapper, 'drawing', 'DrawingVersion')
+      define_version_entity(base, version_mapper, 'citation', 'CitationVersion')
+      define_version_entity(base, version_mapper, 'cpc_classification', 'CPCClassificationVersion')
+      define_version_entity(base, version_mapper, 'ipc_classification', 'IPCClassificationVersion')
+      define_version_entity(base, version_mapper, 'national_classification', 'NationalClassificationVersion')
 
-    def patent_tag(mode)
-      if mode == :grant
-        @@version_mapper.dig('xml', 'patent_grant_tag')
-      elsif mode == :application
-        @@version_mapper.dig('xml', 'patent_application_tag')
+      define_method(:patent_tag) do |mode|
+        if mode == :grant
+          version_mapper.dig('xml', 'patent_grant_tag')
+        elsif mode == :application
+          version_mapper.dig('xml', 'patent_application_tag')
+        end
       end
-    end
-
-    def patent_type(patent_grant_hash)
-      patent_grant_hash.dig(
-        *@@version_mapper.dig('patent', 'patent_type')
-      )
+      define_method(:patent_type) do |patent_grant_hash|
+        patent_grant_hash.dig(
+          *version_mapper.dig('patent', 'patent_type')
+        )
+      end
     end
   end
 end
