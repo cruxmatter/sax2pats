@@ -20,6 +20,7 @@ module Sax2pats
     def parse_patents
       patent_doc = ''
       File.open(filename, 'r').each_line do |line|
+        # TODO filter out non-patents
         if line.start_with?('<?xml') && !patent_doc.empty?
           parse_patent(patent_doc)
           patent_doc = line

@@ -23,13 +23,13 @@ module Sax2pats
                   :drawings,
                   :tables,
                   :classifications,
-                  :classification_national,
                   :invention_title,
                   :publication_reference,
                   :application_reference,
                   :number_of_claims,
                   :abstract,
-                  :description
+                  :description,
+                  :patent_type
     attr_reader :description_text, :abstract_text
 
     def initialize(from_version)
@@ -41,6 +41,24 @@ module Sax2pats
       @claims = []
       @drawings = []
       @classifications = []
+    end
+
+    def ipc_classifications
+      @classifications.select do |classification|
+        classification.class == Sax2pats::IPCClassification
+      end
+    end
+
+    def cpc_classifications
+      @classifications.select do |classification|
+        classification.class == Sax2pats::CPCClassification
+      end
+    end
+
+    def national_classifications
+      @classifications.select do |classification|
+        classification.class == Sax2pats::NationalClassification
+      end
     end
   end
 end

@@ -1,0 +1,123 @@
+xml:
+  patent_grant_tag: us-patent-grant
+  patent_application_tag: us-patent-application
+patent:
+  patent_type:
+    - us-bibliographic-data-grant
+    - application-reference
+    - appl-type
+  publication_reference:
+    - us-bibliographic-data-grant
+    - publication-reference
+  application_reference:
+    - us-bibliographic-data-grant
+    - application-reference
+  invention_title:
+    - us-bibliographic-data-grant
+    - invention-title
+  number_of_claims:
+    - us-bibliographic-data-grant
+    - number-of-claims
+  abstract: abstract
+  description: description
+  inventors:
+    - us-bibliographic-data-grant
+    - us-parties
+    - inventors
+    - inventor
+  claims:
+    - claims
+    - claim
+  drawings:
+    - drawings
+    - figure
+  citations:
+    - us-bibliographic-data-grant
+    - us-references-cited
+    - us-citation
+  main_cpc:
+    - us-bibliographic-data-grant
+    - classifications-cpc
+    - main-cpc
+    - classification-cpc
+  further_cpc:
+    - us-bibliographic-data-grant
+    - classifications-cpc
+    - further-cpc
+    - classification-cpc
+  ipc_classifications:
+    - us-bibliographic-data-grant
+    - classifications-ipcr
+    - classification-ipcr
+  national_classifications:
+    - us-bibliographic-data-grant
+    - us-field-of-classification-search
+    - classification-national
+inventor:
+  address:
+    - addressbook
+    - address
+  first_name:
+    - addressbook
+    - first-name
+  last_name:
+    - addressbook
+    - last-name
+claim:
+  claim_id: id
+drawing:
+  id: id
+citation:
+  patent_citation: patcit
+  other_citation: nplcit
+  category: category
+  document_id:
+    - patcit
+    - document-id
+  classification_cpc_text: classification-cpc-text
+  classification_national: classification-national
+  us_field_of_classification_search: us-field-of-classification-search
+cpc_classification:
+  version_date:
+    - cpc-version-indicator
+    - date
+  section: section
+  cclass: class
+  subclass: subclass
+  main_group: main-group
+  subgroup: subgroup
+  symbol_position: symbol-position
+  action_date:
+    - action-date
+    - date
+  generating_office_country:
+    - generating-office
+    - country
+  classification_status: classification-status
+  classification_data_source: classification-data-source
+  classification_value: classification-value
+  scheme_origination_code: scheme-origination-code
+ipc_classification:
+  version_date:
+    - ipc-version-indicator
+    - date
+  section: section
+  cclass: class
+  subclass: subclass
+  main_group: main-group
+  subgroup: subgroup
+  symbol_position: symbol-position
+  action_date:
+    - action-date
+    - date
+  generating_office_country:
+    - generating-office
+    - country
+  classification_level: classification-level
+  classification_status: classification-status
+  classification_data_source: classification-data-source
+  classification_value: classification-value
+national_classification:
+  country: country
+  main_classification: main-classification
+  further_classification: further-classification

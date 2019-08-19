@@ -13,10 +13,27 @@ module Sax2pats
       self.class.doc_body(element)
     end
 
+    def as_text
+      self.class.text_body(element)
+    end
+
     module ClassMethods
       def attr_string(attrs_hash)
         return '' if attrs_hash.to_h.empty?
         " #{attrs_hash.map{ |ak, av| "#{ak}=\"#{av}\"" }.join(' ')}"
+      end
+
+      def text_body(text_element)
+        if [Saxerator::Builder::StringElement, String].include?(text_element.class)
+          return text_element.to_s
+        end
+
+        if [Saxerator::Builder::ArrayElement, Array].include?(text_element.class)
+          return text_element.map{ |el| self.text_body(el) }.join
+        end
+
+        text_element.reject{|k,v| text_element.attributes.include?(k) }
+          .map{ |k,v| self.text_body(v) }.join
       end
 
       def doc_body(text_element)

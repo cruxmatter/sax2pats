@@ -2,7 +2,7 @@ module Sax2pats
   class Claim
     include Entity
     include DocEntity
-    attr_accessor :element, :claim_id
+    attr_accessor :claim_id
     attr_reader :refs
 
     def refs

@@ -23,7 +23,8 @@ module Sax2pats
   end
 
   class CPCClassification < Classification
-    attr_accessor :version_date,
+    attr_accessor :type,
+                  :version_date,
                   :section,
                   :cclass,
                   :subclass,
