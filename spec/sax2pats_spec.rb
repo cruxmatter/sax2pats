@@ -139,6 +139,49 @@ RSpec.describe Sax2pats do
       it 'patent claims' do
         expect(@patents.map{|pt| pt.claims.size}.take(10)).to match_array(@patents.map{|pt| pt.number_of_claims.to_i}.take(10))
       end
+
+      let(:patent) do
+        @patents.detect do |pat|
+          pat.publication_reference['document-id']['doc-number'] == '06982246'
+        end
+      end
+
+      describe 'patent' do
+        let(:expected_version) { '4.1' }
+        let(:expected_descr_fragment) { '' }
+        let(:expected_national_classifications_size) { 0 }
+
+        context 'utility patent' do
+          let(:expected_invention_title) { 'Cytomodulating peptide for inhibiting lymphocyte activity' }
+          let(:expected_pub_ref_hash) do
+            {
+              'doc-number' => '06982246',
+              'country' => 'US',
+              'kind' => 'B1',
+              'date' => '20060103'
+            }
+          end
+          let(:expected_abstract_doc) do
+            '<abstract id="abstract"><p id="p-0001" num="0000">Novel oligopeptides comprising a sequence associated with HLA-B α<sub>1 </sub>domain, but comprising a tyrosine-tyrosine-tryptophan triad are provided for use in inhibiting cytotoxic activity of CTLs and natural killer cells. By combining the subject compositions with mixtures of cells comprising the cytotoxic cells and cells which would otherwise activate the cytotoxic cells, lysis of the target cells can be substantially inhibited. the oligopeptides may be joined to a wide variety of other groups or compounds for varying the activity of the subject compositions. The subject compositions may be administered by any convenient means to a host to inhibit CTL and NK attack on tissue, particularly involved with xenogeneic or allogeneic transplants.</p></abstract>'
+          end
+          let(:expected_abstract_text) do
+            'Novel oligopeptides comprising a sequence associated with HLA-B α1 domain, but comprising a tyrosine-tyrosine-tryptophan triad are provided for use in inhibiting cytotoxic activity of CTLs and natural killer cells. By combining the subject compositions with mixtures of cells comprising the cytotoxic cells and cells which would otherwise activate the cytotoxic cells, lysis of the target cells can be substantially inhibited. the oligopeptides may be joined to a wide variety of other groups or compounds for varying the activity of the subject compositions. The subject compositions may be administered by any convenient means to a host to inhibit CTL and NK attack on tissue, particularly involved with xenogeneic or allogeneic transplants.'
+          end
+          let(:expected_claim_refs_array) { [[], ["CLM-00001"], ["CLM-00002"], ["CLM-00001"], ["CLM-00001"], ["CLM-00001"]] }
+          let(:expected_inventors_size) { 1 }
+          let(:expected_patent_citations_size) { 15 }
+          let(:expected_patent_claims_size) { 6 }
+          let(:expected_classifications_size) { 12 }
+          let(:expected_cpc_classifications_size) { 0 }
+          let(:expected_ipc_classifications_size) { 5 }
+          let(:expected_national_classifications_size) { 7 }
+          # This patent has "sequences" instead of drawings
+          let(:expected_patent_drawings_size) { 0 }
+
+          it_behaves_like 'a patent'
+          it_behaves_like 'a patent with abstract'
+        end
+      end
     end
 
     context 'from version 4.5' do
@@ -178,21 +221,8 @@ RSpec.describe Sax2pats do
 
       describe 'patent' do
         let(:expected_version) { '4.5' }
-        let(:expected_invention_title) { '' }
         let(:expected_descr_fragment) { '' }
-        let(:expected_abstract_doc) { nil }
-        let(:expected_abstract_text) { nil }
-        let(:expected_patent_citations_size) { 0 }
-        let(:expected_patent_claims_size) { 0 }
-        let(:expected_claim_refs_array) { [] }
-        let(:expected_classifications_size) { 0 }
-        let(:expected_cpc_classifications_size) { 0 }
-        let(:expected_ipc_classifications_size) { 0 }
-        let(:expected_patent_drawings_size) { 0 }
         let(:expected_national_classifications_size) { 0 }
-        let(:expected_inventors_size) { 0 }
-
-        let(:expected_pub_ref_hash) { {} }
 
         context 'patent 1' do
           let(:patent) { patent_1 }

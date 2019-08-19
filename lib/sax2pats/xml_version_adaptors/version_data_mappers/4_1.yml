@@ -22,9 +22,9 @@ patent:
   description: description
   inventors:
     - us-bibliographic-data-grant
-    - us-parties
-    - inventors
-    - inventor
+    - parties
+    - applicants
+    - applicant
   claims:
     - claims
     - claim

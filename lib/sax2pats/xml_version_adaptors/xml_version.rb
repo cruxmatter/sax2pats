@@ -13,10 +13,11 @@ module Sax2pats
       end
     end
 
-    def enumerate_child_entities(child_entities)
+    def enumerate_child_entities(child_entities, filter_block: nil)
       if child_entities.is_a?(Saxerator::Builder::HashElement)
         yield child_entities
       elsif child_entities.is_a?(Saxerator::Builder::ArrayElement)
+        child_entities = filter_block.call(child_entities) if filter_block
         child_entities.each do |child_entity_hash|
           yield child_entity_hash
         end
@@ -25,20 +26,66 @@ module Sax2pats
   end
 
   module XMLVersion
-    def self.define_version_entity(base, version_mapper, entity_key, class_name)
-      version_class = Class.new(Object) do
-        include EntityVersion
-
-        # TODO: allow custom block
+    module ClassMethods
+      def patent_version_class
+        Class.new(Object) do
+          include EntityVersion
+        end
       end
 
-      version_class.define_singleton_method(:version_mapper) do
-        version_mapper.fetch(entity_key)
+      def define_patent_version(version_mapper)
+        version_class = patent_version_class
+        define_patent_child_enumerations(version_class)
+        define_version_entity(
+          version_mapper,
+          'patent',
+          'PatentGrantVersion',
+          version_class: version_class
+        )
       end
-      base.const_set(class_name, version_class)
+
+      def inventors_filter; end
+
+      def define_patent_child_enumerations(version_class)
+        fb = inventors_filter
+        version_class.define_method(:enumerate_child_inventors) do |child_entities, &block|
+          enumerate_child_entities(child_entities, filter_block: fb) do |child_entity|
+            block.call(child_entity)
+          end
+        end
+
+        [
+          :enumerate_child_claims,
+          :enumerate_child_drawings,
+          :enumerate_child_citations,
+          :enumerate_child_ipc_classifications,
+          :enumerate_child_national_classifications
+        ].each do |enum_method|
+          version_class.define_method(enum_method) do |child_entities, &block|
+            enumerate_child_entities(child_entities) do |child_entity|
+              block.call(child_entity)
+            end
+          end
+        end
+      end
+
+      def define_version_entity(version_mapper, entity_key, class_name, version_class: nil)
+        unless version_class
+          version_class = Class.new(Object) do
+            include EntityVersion
+          end
+        end
+
+        version_class.define_singleton_method(:version_mapper) do
+          version_mapper.fetch(entity_key)
+        end
+        self.const_set(class_name, version_class)
+      end
     end
 
     def self.included(base)
+      base.extend(ClassMethods)
+
       root = File.expand_path ''
       version_mapper = nil
       File.open(
@@ -52,14 +99,14 @@ module Sax2pats
         )
       ) { |f| version_mapper = YAML.safe_load(f) }
 
-      define_version_entity(base, version_mapper, 'patent', 'PatentGrantVersion')
-      define_version_entity(base, version_mapper, 'inventor', 'InventorVersion')
-      define_version_entity(base, version_mapper, 'claim', 'ClaimVersion')
-      define_version_entity(base, version_mapper, 'drawing', 'DrawingVersion')
-      define_version_entity(base, version_mapper, 'citation', 'CitationVersion')
-      define_version_entity(base, version_mapper, 'cpc_classification', 'CPCClassificationVersion')
-      define_version_entity(base, version_mapper, 'ipc_classification', 'IPCClassificationVersion')
-      define_version_entity(base, version_mapper, 'national_classification', 'NationalClassificationVersion')
+      base.define_patent_version(version_mapper)
+      base.define_version_entity(version_mapper, 'inventor', 'InventorVersion')
+      base.define_version_entity(version_mapper, 'claim', 'ClaimVersion')
+      base.define_version_entity(version_mapper, 'drawing', 'DrawingVersion')
+      base.define_version_entity(version_mapper, 'citation', 'CitationVersion')
+      base.define_version_entity(version_mapper, 'cpc_classification', 'CPCClassificationVersion')
+      base.define_version_entity(version_mapper, 'ipc_classification', 'IPCClassificationVersion')
+      base.define_version_entity(version_mapper, 'national_classification', 'NationalClassificationVersion')
 
       define_method(:patent_tag) do |mode|
         if mode == :grant

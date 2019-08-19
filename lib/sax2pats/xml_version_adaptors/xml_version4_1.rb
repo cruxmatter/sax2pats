@@ -3,10 +3,16 @@ module Sax2pats
     VERSION = '4.1'.freeze
     DATA_MAPPER_FILE = '4_1.yml'.freeze
 
-    include Sax2pats::XMLVersion
+    class << self
+      def inventors_filter
+        Proc.new do |inventors|
+          inventors.select do |inventor|
+            inventor.attributes['app-type'] == 'applicant-inventor'
+          end
+        end
+      end
+    end
 
-    # class LocarnoClassificationVersion
-    #   include Sax2pats::EntityVersion
-    # end
+    include Sax2pats::XMLVersion
   end
 end
