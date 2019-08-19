@@ -19,11 +19,26 @@ class EntityFactory
     raise NotImplementedError
   end
 
+  def attribute_types
+    {}
+  end
+
+  def coerce_type(attr_key, attr_value)
+    case attribute_types[attr_key]
+    when 'int'
+      attr_value.to_i
+    when 'date'
+      Date.parse attr_value
+    else
+      attr_value
+    end
+  end
+
   def assign_attributes(attributes_data_hash)
     # TODO types?
     attributes_data_hash
       .select { |k, _v| attribute_keys.include? k }
-      .each { |k,v| @entity.public_send("#{k}=", v) }
+      .each { |k,v| @entity.public_send("#{k}=", coerce_type(k, v)) }
   end
 
   def assign_entities(entities_data_hash); end

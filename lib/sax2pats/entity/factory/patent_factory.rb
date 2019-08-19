@@ -21,6 +21,12 @@ class PatentFactory < EntityFactory
     ]
   end
 
+  def attribute_types
+    {
+      'number_of_claims' => 'int'
+    }
+  end
+
   def assign_entities(entities_data_hash)
     @entity.abstract = Sax2pats::PatentAbstract.new(
       element: entities_data_hash.fetch('abstract')

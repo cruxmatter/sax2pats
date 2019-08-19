@@ -35,6 +35,13 @@ class CPCClassificationFactory < EntityFactory
     ]
   end
 
+  def attribute_types
+    {
+      'version_date' => 'date',
+      'action_date' => 'date'
+    }
+  end
+
   def assign_attributes(attributes_data_hash)
     super(attributes_data_hash.merge('type' => @type))
   end

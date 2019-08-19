@@ -9,6 +9,11 @@ shared_examples 'a patent' do
     expect(patent.invention_title).to eq expected_invention_title
   end
 
+  it 'number_of_claims' do
+    expect(patent.number_of_claims.kind_of? Integer).to be_truthy
+    expect(patent.number_of_claims).to eq expected_patent_claims_size
+  end
+
   it 'publication_reference' do
     ref_hash = patent.publication_reference['document-id']
     ref_hash.each do |k,v|
@@ -111,8 +116,12 @@ shared_examples 'a national classification' do
 end
 
 shared_examples 'a cpc classification' do
-  it 'cpc' do
+  it '#cclass' do
     expect(cpc_classification.cclass).to eq expected_cclass
+  end
+
+  it '#action_date' do
+    expect(cpc_classification.action_date.year).to eq expected_cpc_action_date_year
   end
 end
 
@@ -394,6 +403,7 @@ RSpec.describe Sax2pats do
         context 'CPC Classification' do
           let(:cpc_classification) { patent_1.cpc_classifications.first }
           let(:expected_cclass) { '04' }
+          let(:expected_cpc_action_date_year) { 2017 }
 
           it_behaves_like 'a cpc classification'
         end
