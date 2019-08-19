@@ -28,14 +28,34 @@ module Sax2pats
   module XMLVersion
     module ClassMethods
       def patent_version_class
+        fb = inventors_filter
         Class.new(Object) do
           include EntityVersion
+
+          define_method(:enumerate_child_inventors) do |child_entities, &block|
+            enumerate_child_entities(child_entities, filter_block: fb) do |child_entity|
+              block.call(child_entity)
+            end
+          end
+
+          [
+            :enumerate_child_claims,
+            :enumerate_child_drawings,
+            :enumerate_child_citations,
+            :enumerate_child_ipc_classifications,
+            :enumerate_child_national_classifications
+          ].each do |enum_method|
+            define_method(enum_method) do |child_entities, &block|
+              enumerate_child_entities(child_entities) do |child_entity|
+                block.call(child_entity)
+              end
+            end
+          end
         end
       end
 
       def define_patent_version(version_mapper)
         version_class = patent_version_class
-        define_patent_child_enumerations(version_class)
         define_version_entity(
           version_mapper,
           'patent',
@@ -45,29 +65,6 @@ module Sax2pats
       end
 
       def inventors_filter; end
-
-      def define_patent_child_enumerations(version_class)
-        fb = inventors_filter
-        version_class.define_method(:enumerate_child_inventors) do |child_entities, &block|
-          enumerate_child_entities(child_entities, filter_block: fb) do |child_entity|
-            block.call(child_entity)
-          end
-        end
-
-        [
-          :enumerate_child_claims,
-          :enumerate_child_drawings,
-          :enumerate_child_citations,
-          :enumerate_child_ipc_classifications,
-          :enumerate_child_national_classifications
-        ].each do |enum_method|
-          version_class.define_method(enum_method) do |child_entities, &block|
-            enumerate_child_entities(child_entities) do |child_entity|
-              block.call(child_entity)
-            end
-          end
-        end
-      end
 
       def define_version_entity(version_mapper, entity_key, class_name, version_class: nil)
         unless version_class
