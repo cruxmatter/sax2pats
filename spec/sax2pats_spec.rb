@@ -135,7 +135,7 @@ RSpec.describe Sax2pats do
     context 'from version 4.1' do
       before(:all) do
         @patents = []
-        patent_handler = Proc.new{|pt| @patents << pt  }
+        patent_handler = proc { |pt| @patents << pt }
         filename = File.join(File.dirname(__FILE__), 'test_41.xml')
         h = Sax2pats::SplitHandler.new(filename, patent_handler)
         h.parse_patents
@@ -225,7 +225,7 @@ RSpec.describe Sax2pats do
       end
 
       it 'patent claims' do
-        expect(@patents.map{|pt| pt.claims.size}).to match_array(@patents.map{|pt| pt.number_of_claims.to_i})
+        expect(@patents.map{ |pt| pt.claims.size}).to match_array(@patents.map{ |pt| pt.number_of_claims.to_i })
       end
 
       describe 'patent' do
