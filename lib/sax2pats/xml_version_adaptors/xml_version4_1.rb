@@ -5,7 +5,7 @@ module Sax2pats
 
     class << self
       def inventors_filter
-        Proc.new do |inventors|
+        proc do |inventors|
           inventors.select do |inventor|
             inventor.attributes['app-type'] == 'applicant-inventor'
           end
