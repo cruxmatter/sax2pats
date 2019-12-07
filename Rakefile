@@ -6,8 +6,12 @@ RSpec::Core::RakeTask.new(:spec)
 
 task :default => :spec
 
-task :generate_cpc_yaml, [:xml_file, :output_yml] do |t, args|
-  parser = Sax2pats::CPCParser.new(args.xml_file, args.output_yml)
-  parser.parse
-  parser.to_yaml
+task :generate_cpc_yaml, [:xml_directory, :titles_directory, :output_yml] do |_t, args|
+  transformer = Sax2pats::CPC::Transformer.new(
+    args.xml_directory,
+    args.titles_directory,
+    args.output_yml
+  )
+  transformer.process
+  transformer.to_yaml
 end
