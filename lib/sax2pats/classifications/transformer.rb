@@ -47,8 +47,10 @@ module Sax2pats
       def write_symbol(file, symbol, values)
         file.write "#{symbol}:\n"
         values.each do |k, d|
-          if symbol == :title
+          if k == :title
             file.write "\s\s#{k}: \"#{d.gsub('"', "'")}\"\n"
+          elsif k == :date_revised
+            file.write "\s\s#{k}: \"#{d}\"\n"
           else
             file.write "\s\s#{k}: #{d}\n"
           end
@@ -108,10 +110,9 @@ module Sax2pats
       def next_items(item)
         return unless item['classification-item']
 
-        array_wrap(item['classification-item']).each do |item|
-          next unless item['class-title']
-          set_data(item)
-          next_items(item)
+        array_wrap(item['classification-item']).each do |class_item|
+          set_data(class_item)
+          next_items(class_item)
         end
       end
     end
