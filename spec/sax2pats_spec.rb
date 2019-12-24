@@ -1,4 +1,6 @@
-require "spec_helper"
+# frozen_string_literal: true
+
+require 'spec_helper'
 
 shared_examples 'a patent' do
   it 'has xml version' do
@@ -10,13 +12,13 @@ shared_examples 'a patent' do
   end
 
   it 'number_of_claims' do
-    expect(patent.number_of_claims.kind_of? Integer).to be_truthy
+    expect(patent.number_of_claims.is_a?(Integer)).to be_truthy
     expect(patent.number_of_claims).to eq expected_patent_claims_size
   end
 
   it 'publication_reference' do
     ref_hash = patent.publication_reference['document-id']
-    ref_hash.each do |k,v|
+    ref_hash.each do |k, v|
       expect(v).to eq expected_pub_ref_hash[k]
     end
   end
@@ -92,14 +94,14 @@ shared_examples 'a drawing' do
   end
 
   it 'drawing doc' do
-    # TODO original doc has no closing tag for img
+    # TODO: original doc has no closing tag for img
     expect(drawing.as_doc).to eq expected_drawing_doc
   end
 end
 
 shared_examples 'a citation' do
   it 'doc-number' do
-    citation.document_id.each do |k, v|
+    citation.document_id.each do |k, _v|
       expect(citation.document_id[k]).to eq expected_document_id[k]
     end
   end
@@ -120,18 +122,21 @@ shared_examples 'a cpc classification' do
     expect(cpc_classification.cclass).to eq expected_cclass
   end
 
+  it '#title' do
+    expect(cpc_classification.title).to eq expected_cpc_title
+  end
+
   it '#action_date' do
     expect(cpc_classification.action_date.year).to eq expected_cpc_action_date_year
   end
 end
 
 RSpec.describe Sax2pats do
-  it "has a version number" do
+  it 'has a version number' do
     expect(Sax2pats::VERSION).not_to be nil
   end
 
   describe 'SAX parse USPTO Patent XML' do
-
     context 'from version 4.1' do
       before(:all) do
         @patents = []
@@ -146,7 +151,7 @@ RSpec.describe Sax2pats do
       end
 
       it 'patent claims' do
-        expect(@patents.map{|pt| pt.claims.size}.take(10)).to match_array(@patents.map{|pt| pt.number_of_claims.to_i}.take(10))
+        expect(@patents.map { |pt| pt.claims.size }.take(10)).to match_array(@patents.map { |pt| pt.number_of_claims.to_i }.take(10))
       end
 
       let(:patent) do
@@ -176,7 +181,7 @@ RSpec.describe Sax2pats do
           let(:expected_abstract_text) do
             'Novel oligopeptides comprising a sequence associated with HLA-B α1 domain, but comprising a tyrosine-tyrosine-tryptophan triad are provided for use in inhibiting cytotoxic activity of CTLs and natural killer cells. By combining the subject compositions with mixtures of cells comprising the cytotoxic cells and cells which would otherwise activate the cytotoxic cells, lysis of the target cells can be substantially inhibited. the oligopeptides may be joined to a wide variety of other groups or compounds for varying the activity of the subject compositions. The subject compositions may be administered by any convenient means to a host to inhibit CTL and NK attack on tissue, particularly involved with xenogeneic or allogeneic transplants.'
           end
-          let(:expected_claim_refs_array) { [[], ["CLM-00001"], ["CLM-00002"], ["CLM-00001"], ["CLM-00001"], ["CLM-00001"]] }
+          let(:expected_claim_refs_array) { [[], ['CLM-00001'], ['CLM-00002'], ['CLM-00001'], ['CLM-00001'], ['CLM-00001']] }
           let(:expected_inventors_size) { 1 }
           let(:expected_patent_citations_size) { 15 }
           let(:expected_patent_claims_size) { 6 }
@@ -214,7 +219,7 @@ RSpec.describe Sax2pats do
 
       before(:all) do
         @patents = []
-        patent_handler = Proc.new{|pt| @patents << pt  }
+        patent_handler = proc { |pt| @patents << pt }
         filename = File.join(File.dirname(__FILE__), 'test_45.xml')
         h = Sax2pats::SplitHandler.new(filename, patent_handler)
         h.parse_patents
@@ -225,7 +230,7 @@ RSpec.describe Sax2pats do
       end
 
       it 'patent claims' do
-        expect(@patents.map{ |pt| pt.claims.size}).to match_array(@patents.map{ |pt| pt.number_of_claims.to_i })
+        expect(@patents.map { |pt| pt.claims.size }).to match_array(@patents.map { |pt| pt.number_of_claims.to_i })
       end
 
       describe 'patent' do
@@ -250,7 +255,7 @@ RSpec.describe Sax2pats do
           let(:expected_abstract_text) do
             'A first device may receive a first session token from a second device; determine that the first session token is expired or invalid; provide a security input to the second device to cause the second device to generate a first hash value of the security input using a key corresponding to a key identifier (ID); receive the key ID and the first hash value from the second device; generate a second hash value using the key corresponding to the key ID; determine that the first hash value matches the second hash value; and establish a session with the second device based on determining that the first hash value matches the second hash value.'
           end
-          let(:expected_claim_refs_array) { [[],["CLM-00001"],["CLM-00001"],["CLM-00001"],["CLM-00001"],["CLM-00001"],["CLM-00001"],["CLM-00001"],[],["CLM-00009"],["CLM-00009"],["CLM-00009"],["CLM-00009"],["CLM-00009"],["CLM-00009"],[],["CLM-00016"],["CLM-00016"],["CLM-00016"],["CLM-00016"]] }
+          let(:expected_claim_refs_array) { [[], ['CLM-00001'], ['CLM-00001'], ['CLM-00001'], ['CLM-00001'], ['CLM-00001'], ['CLM-00001'], ['CLM-00001'], [], ['CLM-00009'], ['CLM-00009'], ['CLM-00009'], ['CLM-00009'], ['CLM-00009'], ['CLM-00009'], [], ['CLM-00016'], ['CLM-00016'], ['CLM-00016'], ['CLM-00016']] }
           let(:expected_inventors_size) { 1 }
           let(:expected_patent_citations_size) { 6 }
           let(:expected_patent_claims_size) { 20 }
@@ -290,26 +295,26 @@ RSpec.describe Sax2pats do
           let(:expected_claim_refs_array) do
             [
               [],
-              ["CLM-00001"],
-              ["CLM-00002"],
-              ["CLM-00001"],
-              ["CLM-00004"],
-              ["CLM-00001"],
-              ["CLM-00006"],
-              ["CLM-00001"],
-              ["CLM-00001"],
-              ["CLM-00001"],
-              ["CLM-00001"],
+              ['CLM-00001'],
+              ['CLM-00002'],
+              ['CLM-00001'],
+              ['CLM-00004'],
+              ['CLM-00001'],
+              ['CLM-00006'],
+              ['CLM-00001'],
+              ['CLM-00001'],
+              ['CLM-00001'],
+              ['CLM-00001'],
               [],
-              ["CLM-00012"],
-              ["CLM-00012"],
-              ["CLM-00014"],
-              ["CLM-00012"],
-              ["CLM-00012"],
-              ["CLM-00012"],
+              ['CLM-00012'],
+              ['CLM-00012'],
+              ['CLM-00014'],
+              ['CLM-00012'],
+              ['CLM-00012'],
+              ['CLM-00012'],
               [],
-              ["CLM-00019"],
-              ["CLM-00019"]
+              ['CLM-00019'],
+              ['CLM-00019']
             ]
           end
           let(:expected_classifications_size) { 11 }
@@ -339,7 +344,7 @@ RSpec.describe Sax2pats do
             }
           end
           let(:expected_claim_refs_array) do
-            [[], [], ["CLM-00001"], ["CLM-00001"], ["CLM-00001"], ["CLM-00001"], ["CLM-00001"], ["CLM-00001"]]
+            [[], [], ['CLM-00001'], ['CLM-00001'], ['CLM-00001'], ['CLM-00001'], ['CLM-00001'], ['CLM-00001']]
           end
           let(:expected_national_classifications_size) { 5 }
           let(:expected_patent_claims_size) { 8 }
@@ -391,7 +396,6 @@ RSpec.describe Sax2pats do
 
       context 'classifications' do
         context 'National_classification' do
-
           let(:national_classification) do
             patent_3.national_classifications.first
           end
@@ -403,6 +407,7 @@ RSpec.describe Sax2pats do
         context 'CPC Classification' do
           let(:cpc_classification) { patent_1.cpc_classifications.first }
           let(:expected_cclass) { '04' }
+          let(:expected_cpc_title) { '{using cryptographic hash functions}' }
           let(:expected_cpc_action_date_year) { 2017 }
 
           it_behaves_like 'a cpc classification'

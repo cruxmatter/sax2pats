@@ -36,7 +36,12 @@ module Sax2pats
                   :classification_status,
                   :classification_data_source,
                   :classification_value,
-                  :scheme_origination_code
+                  :scheme_origination_code,
+                  :title
+
+    def symbol
+      @symbol ||= "#{section}#{cclass}#{subclass}#{main_group}/#{subgroup}"
+    end
   end
 
   class LocarnoClassification < Classification

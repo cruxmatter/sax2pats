@@ -2,17 +2,15 @@ module Sax2pats
   class SplitHandler
     attr_accessor :filename, :patent_handler
 
-    def initialize(filename, patent_handler, patent_types: nil)
+    def initialize(filename, patent_handler)
       @filename = filename
       @patent_handler = patent_handler
-      @patent_types = patent_types
     end
 
     def parse_patent(patent_doc)
       h = Sax2pats::Handler.new(
         StringIO.new(patent_doc),
-        patent_handler,
-        patent_types: @patent_types
+        patent_handler
       )
       h.parse_patents
     end
@@ -28,7 +26,7 @@ module Sax2pats
           patent_doc << line
         end
       end
-      parse_patent(patent_doc) if !patent_doc.empty?
+      parse_patent(patent_doc) unless patent_doc.empty?
     end
   end
 end

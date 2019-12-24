@@ -44,5 +44,11 @@ class CPCClassificationFactory < EntityFactory
 
   def assign_attributes(attributes_data_hash)
     super(attributes_data_hash.merge('type' => @type))
+    return unless @xml_version_adaptor.cpc_metadata
+
+    @entity.title = @xml_version_adaptor
+                    .cpc_metadata
+                    .fetch(@entity.symbol)
+                    .fetch('title')
   end
 end

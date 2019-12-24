@@ -1,4 +1,5 @@
 require 'yaml'
+require 'zlib'
 
 module Sax2pats
   module EntityVersion
@@ -26,6 +27,25 @@ module Sax2pats
   end
 
   module XMLVersion
+    attr_reader :cpc_metadata
+
+    def load_cpc_metadata
+      # TODO handle version by file
+      # move this to helper
+      root = File.expand_path ''
+  
+      Zlib::GzipReader.open(
+        File.join(
+          root,
+          'lib',
+          'sax2pats',
+          'classifications',
+          'data',
+          'cpc_201908.yml.gz'
+        )
+      ) { |f| @cpc_metadata = YAML.safe_load(f) }
+    end
+
     module ClassMethods
       CHILD_ENTITIES = [
         :inventors,

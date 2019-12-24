@@ -6,22 +6,35 @@ module Sax2pats
                   :xml_version,
                   :patent_types
 
-    def initialize(file, patent_handler, patent_types: nil)
+    def initialize(file, patent_handler)
       @file = file
-      @parser = Saxerator.parser(file) do |config|
-        config.adapter = :ox
-        config.put_attributes_in_hash!
+      @parser = Saxerator.parser(file) do |sax_config|
+        sax_config.adapter = :ox
+        sax_config.put_attributes_in_hash!
       end
       @patent_handler = patent_handler
-      @patent_types = patent_types.map(&:to_sym) if patent_types
+      @config = Configuration.new
+
+      yield @config if block_given?
+
+      if @config.patent_types
+        @patent_types = @config.patent_types.map(&:to_sym)
+      end
+
       @xml_version = version_adaptor_class.new if version_adaptor_class
+
+      if @xml_version && @config.include_cpc_metadata?
+        @xml_version.load_cpc_metadata
+      end
     end
 
     def parse_patents
       return unless @xml_version
+
       @parser.for_tag(@xml_version.patent_tag(:grant)).each do |patent_grant_hash|
         patent_type = @xml_version.patent_type(patent_grant_hash).to_sym
-        next unless @patent_types.nil? || (@patent_types || []).include?(patent_type)
+        next unless @patent_types.empty? || @patent_types.include?(patent_type)
+
         patent = PatentFactory.new(@xml_version, patent_grant_hash).patent
         @patent_handler.call(patent)
       end
