@@ -1,24 +1,20 @@
 module Sax2pats
-  class SplitHandler
-    attr_accessor :filename, :patent_handler
-
-    def initialize(filename, patent_handler)
-      @filename = filename
-      @patent_handler = patent_handler
-    end
-
+  class SplitProcessor < Processor
     def parse_patent(patent_doc)
-      h = Sax2pats::Handler.new(
+      processor = Sax2pats::SingleProcessor.new(
         StringIO.new(patent_doc),
-        patent_handler
-      )
-      h.parse_patents
+        @patent_handler
+      ) do |config|
+        config.instance_variables.each do |v|
+          config.instance_variable_set(v, @config.instance_variable_get(v))
+        end
+      end
+      processor.parse_patents
     end
 
     def parse_patents
       patent_doc = ''
-      File.open(filename, 'r').each_line do |line|
-        # TODO filter out non-patents
+      @file.each_line do |line|
         if line.start_with?('<?xml') && !patent_doc.empty?
           parse_patent(patent_doc)
           patent_doc = line

@@ -47,8 +47,7 @@ class CPCClassificationFactory < EntityFactory
     return unless @xml_version_adaptor.cpc_metadata
 
     @entity.title = @xml_version_adaptor
-                    .cpc_metadata
-                    .fetch(@entity.symbol)
-                    .fetch('title')
+                      .cpc_metadata
+                      .dig(@entity.symbol, 'title')
   end
 end

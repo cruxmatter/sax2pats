@@ -29,6 +29,10 @@ module Sax2pats
   module XMLVersion
     attr_reader :cpc_metadata
 
+    def initialize(include_cpc_metadata: false)
+      load_cpc_metadata if include_cpc_metadata
+    end
+
     def load_cpc_metadata
       # TODO handle version by file
       # move this to helper

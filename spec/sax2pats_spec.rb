@@ -142,7 +142,7 @@ RSpec.describe Sax2pats do
         @patents = []
         patent_handler = proc { |pt| @patents << pt }
         filename = File.join(File.dirname(__FILE__), 'test_41.xml')
-        h = Sax2pats::SplitHandler.new(filename, patent_handler)
+        h = Sax2pats::SplitProcessor.new(File.open(filename, 'r'), patent_handler)
         h.parse_patents
       end
 
@@ -221,7 +221,9 @@ RSpec.describe Sax2pats do
         @patents = []
         patent_handler = proc { |pt| @patents << pt }
         filename = File.join(File.dirname(__FILE__), 'test_45.xml')
-        h = Sax2pats::SplitHandler.new(filename, patent_handler)
+        h = Sax2pats::SplitProcessor.new(File.open(filename, 'r'), patent_handler) do |config|
+          config.include_cpc_metadata = true
+        end
         h.parse_patents
       end
 
