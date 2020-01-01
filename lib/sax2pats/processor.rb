@@ -14,7 +14,7 @@ module Sax2pats
 
       yield @config if block_given?
 
-      @included_patent_types = 
+      @included_patent_types =
         if @config.included_patent_types
           @config.included_patent_types.map(&:to_sym)
         else

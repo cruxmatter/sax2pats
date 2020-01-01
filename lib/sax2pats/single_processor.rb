@@ -19,8 +19,21 @@ module Sax2pats
         patent_type = @xml_version_adaptor.patent_type(patent_grant_hash).to_sym
         next unless @included_patent_types.include?(patent_type)
 
-        patent = PatentFactory.new(@xml_version_adaptor, patent_grant_hash).patent
-        @patent_handler.call(patent)
+        custom_factories = {}
+
+        if @config.include_cpc_metadata?
+          custom_factories[:cpc_classifications] =
+            CPCClassificationFactory.new(
+              @xml_version_adaptor,
+              cpc_metadata: @config.cpc_metadata
+            )
+        end
+
+        patent_factory = PatentFactory.new(
+          @xml_version_adaptor
+        )
+        patent_factory.custom_factories = custom_factories
+        @patent_handler.call(patent_factory.create(patent_grant_hash))
       end
     end
 

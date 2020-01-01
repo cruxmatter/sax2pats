@@ -1,9 +1,14 @@
 class Configuration
   attr_accessor :included_patent_types,
                 :included_patent_states,
-                :include_cpc_metadata
+                :include_cpc_metadata,
+                :cpc_metadata
 
-  def initialize(included_patent_types: %i[utility design plant], included_patent_states: ['us-patent-grant'], include_cpc_metadata: false)
+  def initialize(
+    included_patent_types: %i[utility design plant],
+    included_patent_states: ['us-patent-grant'],
+    include_cpc_metadata: false
+  )
     @included_patent_types = included_patent_types
     @included_patent_states = included_patent_states
     @include_cpc_metadata = include_cpc_metadata
@@ -15,9 +20,7 @@ class Configuration
   end
 
   def xml_version_adaptor(version)
-    @loaded_xml_version_adaptors[version] ||= version_adaptor_class(version).new(
-      include_cpc_metadata: include_cpc_metadata?
-    )
+    @loaded_xml_version_adaptors[version] ||= version_adaptor_class(version).new
     @loaded_xml_version_adaptors[version]
   end
 

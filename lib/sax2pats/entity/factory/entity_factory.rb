@@ -1,18 +1,23 @@
 class EntityFactory
   attr_accessor :entity, :xml_version_adaptor
 
-  def initialize(xml_version_adaptor, data_hash)
+  def initialize(xml_version_adaptor)
     @xml_version_adaptor = xml_version_adaptor
-    @entity_version_adaptor = entity_version_adaptor_class(
-      xml_version_adaptor.class
-    ).new(data_hash)
+    @entity_version_adaptor_class = entity_version_adaptor_class(
+      @xml_version_adaptor.class
+    )
+  end
 
+  def create(data_hash)
+    @entity_version_adaptor = @entity_version_adaptor_class.new(data_hash)
     @entity_data = @entity_version_adaptor.entity_attribute_hash
 
-    @entity = entity_class.new(xml_version_adaptor.class::VERSION)
+    @entity = entity_class.new(@xml_version_adaptor.class::VERSION)
 
     assign_attributes(@entity_data)
     assign_entities(@entity_data)
+
+    @entity
   end
 
   def attribute_keys

@@ -27,29 +27,6 @@ module Sax2pats
   end
 
   module XMLVersion
-    attr_reader :cpc_metadata
-
-    def initialize(include_cpc_metadata: false)
-      load_cpc_metadata if include_cpc_metadata
-    end
-
-    def load_cpc_metadata
-      # TODO handle version by file
-      # move this to helper
-      root = File.expand_path ''
-  
-      Zlib::GzipReader.open(
-        File.join(
-          root,
-          'lib',
-          'sax2pats',
-          'classifications',
-          'data',
-          'cpc_201908.yml.gz'
-        )
-      ) { |f| @cpc_metadata = YAML.safe_load(f) }
-    end
-
     module ClassMethods
       CHILD_ENTITIES = [
         :inventors,
@@ -129,10 +106,10 @@ module Sax2pats
       base.define_version_entity(version_mapper, 'ipc_classification', 'IPCClassificationVersion')
       base.define_version_entity(version_mapper, 'national_classification', 'NationalClassificationVersion')
 
-      define_method(:patent_tag) do |mode|
-        if mode == :grant
+      define_method(:patent_tag) do |state|
+        if state == :grant
           version_mapper.dig('xml', 'patent_grant_tag')
-        elsif mode == :application
+        elsif state == :application
           version_mapper.dig('xml', 'patent_application_tag')
         end
       end

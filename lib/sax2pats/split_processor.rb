@@ -1,11 +1,17 @@
 module Sax2pats
   class SplitProcessor < Processor
+    def after_initialize
+      return unless @config.include_cpc_metadata?
+
+      @config.cpc_metadata = CPCMetadata.new
+    end
+
     def parse_patent(patent_doc)
       processor = Sax2pats::SingleProcessor.new(
         StringIO.new(patent_doc),
         @patent_handler
       ) do |config|
-        config.instance_variables.each do |v|
+        @config.instance_variables.each do |v|
           config.instance_variable_set(v, @config.instance_variable_get(v))
         end
       end
