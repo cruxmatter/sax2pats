@@ -1,4 +1,5 @@
 module Sax2pats
+  # TODO: rename to PatentClassification
   class Classification
     include Entity
   end

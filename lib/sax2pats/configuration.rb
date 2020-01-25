@@ -19,6 +19,12 @@ class Configuration
     include_cpc_metadata
   end
 
+  def load_cpc_metadata
+    cpc_loader = Sax2pats::CPC::Loader.new
+    cpc_loader.process('201908')
+    @cpc_metadata = cpc_loader
+  end
+
   def xml_version_adaptor(version)
     @loaded_xml_version_adaptors[version] ||= version_adaptor_class(version).new
     @loaded_xml_version_adaptors[version]

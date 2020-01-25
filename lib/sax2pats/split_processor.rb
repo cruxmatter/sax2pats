@@ -3,7 +3,7 @@ module Sax2pats
     def after_initialize
       return unless @config.include_cpc_metadata?
 
-      @config.cpc_metadata = CPCMetadata.new
+      @config.load_cpc_metadata
     end
 
     def parse_patent(patent_doc)
