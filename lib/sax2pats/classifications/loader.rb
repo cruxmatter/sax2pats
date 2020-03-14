@@ -7,11 +7,12 @@ module Sax2pats
       attr_accessor :classifications, :metadata
 
       VERSION_FILE_MAPPER = {
-        '201908' => 'cpc_201908.zip'
+        '201908' => 'cpc_201908.zip',
+        '201309' => 'cpc_201309.zip'
       }
 
       VERSION_DATE_MAPPER = {
-        '20130101' => '201908', # TODO: remove and replace
+        '20130101' => '201309', # TODO: remove and replace
         '20150115' => '201908' # TODO: remove and replace
       }
 

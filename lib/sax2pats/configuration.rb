@@ -21,7 +21,9 @@ class Configuration
 
   def load_cpc_metadata
     cpc_loader = Sax2pats::CPC::Loader.new
-    cpc_loader.process('201908')
+    Sax2pats::CPC::Loader::VERSION_FILE_MAPPER.keys.each do |version|
+      cpc_loader.process(version)
+    end
     @cpc_metadata = cpc_loader
   end
 
