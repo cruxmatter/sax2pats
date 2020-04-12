@@ -9,6 +9,7 @@ PATH
   specs:
     sax2pats (0.1.0)
       ox
+      saxerator
 
 GEM
   remote: https://rubygems.org/
