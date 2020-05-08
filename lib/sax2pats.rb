@@ -8,6 +8,7 @@ require 'saxerator'
 require 'ox'
 require 'pry'
 
+require 'sax2pats/utility'
 require 'sax2pats/entity/factory/entity_factory'
 require 'sax2pats/entity/factory/patent_factory'
 require 'sax2pats/entity/factory/inventor_factory'

@@ -11,9 +11,11 @@ module Sax2pats
         '201309' => 'cpc_201309.zip'
       }
 
+      # The cpc version indicator in the patent xml
+      # needs to be mapped to a cpc version release
       VERSION_DATE_MAPPER = {
-        '20130101' => '201309', # TODO: remove and replace
-        '20150115' => '201908' # TODO: remove and replace
+        '20130101' => '201309',
+        '20150115' => '201908'
       }
 
       def initialize
@@ -26,7 +28,7 @@ module Sax2pats
       end
 
       def process_all_versions
-        Sax2pats::CPC::Loader::VERSION_FILE_MAPPER.keys.each do |version|
+        VERSION_FILE_MAPPER.keys.each do |version|
           process(version)
         end
       end
@@ -100,14 +102,10 @@ module Sax2pats
         end
       end
 
-      def array_wrap(o)
-        o.is_a?(Saxerator::Builder::ArrayElement) ? o : [o]
-      end
-
       def next_items(item)
         return unless item['classification-item']
 
-        array_wrap(item['classification-item']).each do |class_item|
+        Utility::array_wrap(item['classification-item']).each do |class_item|
           @loader.read_classification_item(class_item, item)
           next_items(class_item)
         end

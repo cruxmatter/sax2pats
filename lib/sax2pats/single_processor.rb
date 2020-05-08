@@ -1,18 +1,17 @@
 module Sax2pats
   class SingleProcessor < Processor
     def after_initialize
-      noop
-      return if @noop
+      return if noop?
 
       @xml_version_adaptor = @config.xml_version_adaptor(version)
     end
 
-    def noop
-      @noop = !@config.included_patent_states.include?(doctype) || version.nil?
+    def noop?
+      !@config.included_patent_states.include?(doctype) || version.nil?
     end
 
     def parse_patents
-      return if @noop
+      return if noop?
       return unless @xml_version_adaptor
 
       parser.for_tag(@xml_version_adaptor.patent_tag(:grant)).each do |patent_grant_hash|
