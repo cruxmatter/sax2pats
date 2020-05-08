@@ -35,10 +35,14 @@ class CitationFactory < EntityFactory
 
   def assign_entities(entities_data_hash)
     unless entities_data_hash.dig('classification_national').nil?
-      @entity.classification_national = NationalClassificationFactory.new(
-        @xml_version_adaptor,
-        entities_data_hash.dig('classification_national'),
-      ).entity
+      national_class_factory = NationalClassificationFactory.new(
+        @xml_version_adaptor
+      )
+
+      @entity.classification_national = 
+        national_class_factory.create(
+          entities_data_hash.dig('classification_national')
+        )
     end
   end
 end

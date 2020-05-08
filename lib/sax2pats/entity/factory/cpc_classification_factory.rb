@@ -1,7 +1,14 @@
 class CPCClassificationFactory < EntityFactory
-  def initialize(xml_version_adaptor, data_hash, type)
+  TYPES = %w[main_cpc further_cpc].freeze
+
+  def initialize(xml_version_adaptor, cpc_metadata: nil)
+    @cpc_metadata = cpc_metadata
+    super(xml_version_adaptor)
+  end
+
+  def create(data_hash, type)
     @type = type
-    super(xml_version_adaptor, data_hash)
+    super(data_hash)
   end
 
   def entity_class
@@ -44,5 +51,13 @@ class CPCClassificationFactory < EntityFactory
 
   def assign_attributes(attributes_data_hash)
     super(attributes_data_hash.merge('type' => @type))
+    return unless @cpc_metadata
+
+    @entity.title =
+      @cpc_metadata
+      .title(
+        @entity.version_date.strftime("%Y%m%d"),
+        @entity.symbol
+      )
   end
 end
