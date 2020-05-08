@@ -84,7 +84,7 @@ module Sax2pats
     def self.included(base)
       base.extend(ClassMethods)
 
-      root = File.expand_path ''
+      root = Gem::Specification.find_by_name("sax2pats").gem_dir
       version_mapper = nil
       File.open(
         File.join(
