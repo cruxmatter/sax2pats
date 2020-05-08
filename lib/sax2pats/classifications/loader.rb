@@ -25,6 +25,12 @@ module Sax2pats
         @metadata[VERSION_DATE_MAPPER[version_date]][symbol]
       end
 
+      def process_all_versions
+        Sax2pats::CPC::Loader::VERSION_FILE_MAPPER.keys.each do |version|
+          process(version)
+        end
+      end
+
       def process(version)
         @current_version = version
         @metadata[version] ||= {}
