@@ -123,7 +123,7 @@ shared_examples 'a cpc classification' do
   end
 
   it '#title' do
-    expect(cpc_classification.title).to eq expected_cpc_title
+    expect(cpc_classification.title[:title]).to eq expected_cpc_title
   end
 
   it '#action_date' do
@@ -409,7 +409,14 @@ RSpec.describe Sax2pats do
         context 'CPC Classification' do
           let(:cpc_classification) { patent_1.cpc_classifications.first }
           let(:expected_cclass) { '04' }
-          let(:expected_cpc_title) { '{using cryptographic hash functions}' }
+          let(:expected_cpc_title) { 
+            {
+              "title-part" => { 
+                "CPC-specific-text" => { "text"=>"using cryptographic hash functions" } 
+              },
+              "date-revised" => "2013-01-01"
+            } 
+          }
           let(:expected_cpc_action_date_year) { 2017 }
 
           it_behaves_like 'a cpc classification'
