@@ -99,6 +99,16 @@ shared_examples 'an inventor' do
   end
 end
 
+shared_examples 'an assignee' do
+  it '#last_name' do
+    expect(assignee.last_name).to eq expected_assignee_last_name
+  end
+
+  it '#orgname' do
+    expect(assignee.orgname).to eq expected_assignee_orgname
+  end
+end
+
 shared_examples 'a drawing' do
   it 'drawings' do
     expect(drawing.id).to eq expected_drawing_id
@@ -346,12 +356,16 @@ RSpec.describe Sax2pats do
           let(:expected_classifications_size) { 11 }
           let(:expected_cpc_classifications_size) { 7 }
           let(:expected_ipc_classifications_size) { 4 }
+          let(:assignee) { patent.assignees.first }
+          let(:expected_assignee_last_name) { nil }
+          let(:expected_assignee_orgname) { 'QUALCOMM Incorporated' }
 
           let(:patent_doc_number) { '09537792' }
           
           include_context 'a parsed patent'
           it_behaves_like 'a patent'
           it_behaves_like 'a patent with abstract'
+          it_behaves_like 'an assignee'
 
           context 'drawing' do
             let(:drawing) { patent.drawings.first }
@@ -382,7 +396,6 @@ RSpec.describe Sax2pats do
         end
 
         context 'patent 3' do
-          let(:patent) { patent_3 }
           let(:expected_invention_title) { 'Manipulation and restoration of authentication challenge parameters in network authentication procedures' }
           let(:expected_inventors_size) { 3 }
           let(:expected_abstract_doc) do
@@ -425,6 +438,17 @@ RSpec.describe Sax2pats do
             it_behaves_like 'a national classification'
           end
         end
+
+        context 'patent 4' do 
+          include_context 'a parsed patent'
+          let(:patent_doc_number) { '09537660' }
+
+          let(:assignee) { patent.assignees.first }
+          let(:expected_assignee_last_name) { 'Wang' }
+          let(:expected_assignee_orgname) { nil }
+
+          it_behaves_like 'an assignee'
+        end
       end
     end
 
@@ -445,6 +469,24 @@ RSpec.describe Sax2pats do
       let(:patent_doc_number) { '09537659' }
           
       include_context 'a parsed patent'
+
+      context 'citation' do
+        let(:citation) do
+          patent.citations.first
+        end
+        let(:expected_document_id) do
+          {
+            'doc-number' => '8607306',
+            'country' => 'US',
+            'kind' => 'B1',
+            'name' => 'Bridge',
+            'date' => '20131200'
+          }
+        end
+        let(:expected_citation_national_class) { 'US' }
+
+        it_behaves_like 'a citation'
+      end
 
       context 'classifications' do
         context 'CPC Classification' do

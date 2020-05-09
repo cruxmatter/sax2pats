@@ -25,6 +25,10 @@ patent:
     - us-parties
     - inventors
     - inventor
+  assignees:
+    - us-bibliographic-data-grant
+    - assignees
+    - assignee
   claims:
     - claims
     - claim
@@ -63,6 +67,22 @@ inventor:
   last_name:
     - addressbook
     - last-name
+assignee:
+  first_name:
+    - addressbook
+    - first-name
+  last_name:
+    - addressbook
+    - last-name
+  orgname:
+    - addressbook
+    - orgname
+  role:
+    - addressbook
+    - role
+  address:
+    - addressbook
+    - address
 claim:
   claim_id: id
 drawing:

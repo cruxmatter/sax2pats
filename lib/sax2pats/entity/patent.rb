@@ -18,6 +18,7 @@ module Sax2pats
   class Patent
     include Entity
     attr_accessor :inventors,
+                  :assignees,
                   :citations,
                   :claims,
                   :drawings,
@@ -37,6 +38,7 @@ module Sax2pats
       @publication_reference = {}
       @application_reference = {}
       @inventors = []
+      @assignees = []
       @citations = []
       @claims = []
       @drawings = []

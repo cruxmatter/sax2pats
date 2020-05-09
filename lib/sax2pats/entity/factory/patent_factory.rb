@@ -90,6 +90,12 @@ class PatentFactory < EntityFactory
         factory_class: InventorFactory
       },
       {
+        key: 'assignees',
+        adapter_method: :enumerate_child_assignees,
+        list: :assignees,
+        factory_class: AssigneeFactory
+      },
+      {
         key: 'claims',
         adapter_method: :enumerate_child_claims,
         list: :claims,

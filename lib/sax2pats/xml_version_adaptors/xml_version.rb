@@ -30,6 +30,7 @@ module Sax2pats
     module ClassMethods
       CHILD_ENTITIES = [
         :inventors,
+        :assignees,
         :claims,
         :drawings,
         :citations,
@@ -84,11 +85,10 @@ module Sax2pats
     def self.included(base)
       base.extend(ClassMethods)
 
-      root = Gem::Specification.find_by_name("sax2pats").gem_dir
       version_mapper = nil
       File.open(
         File.join(
-          root,
+          Utility::root,
           'lib',
           'sax2pats',
           'xml_version_adaptors',
@@ -99,6 +99,7 @@ module Sax2pats
 
       base.define_patent_version(version_mapper)
       base.define_version_entity(version_mapper, 'inventor', 'InventorVersion')
+      base.define_version_entity(version_mapper, 'assignee', 'AssigneeVersion')
       base.define_version_entity(version_mapper, 'claim', 'ClaimVersion')
       base.define_version_entity(version_mapper, 'drawing', 'DrawingVersion')
       base.define_version_entity(version_mapper, 'citation', 'CitationVersion')
