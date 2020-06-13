@@ -21,7 +21,7 @@ class Configuration
 
   def load_cpc_metadata
     cpc_loader = Sax2pats::CPC::Loader.new
-    cpc_loader.process_all_versions
+    # cpc_loader.process_all_versions
     @cpc_metadata = cpc_loader
   end
 

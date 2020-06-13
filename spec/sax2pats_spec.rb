@@ -123,7 +123,7 @@ shared_examples 'a cpc classification' do
   end
 
   it '#title' do
-    expect(cpc_classification.title[:title]).to eq expected_cpc_title
+    expect(cpc_classification.title['title']).to eq expected_cpc_title
   end
 
   it '#action_date' do

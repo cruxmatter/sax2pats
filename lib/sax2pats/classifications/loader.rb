@@ -1,5 +1,8 @@
 require 'yaml'
+require 'json'
 require 'zip'
+require 'redis'
+require 'redis-namespace'
 
 module Sax2pats
   module CPC
@@ -19,12 +22,13 @@ module Sax2pats
       }
 
       def initialize
-        @metadata = {}
         @current_version = nil
+        @redis_client = Redis.new
       end
 
       def title(version_date, symbol)
-        @metadata[VERSION_DATE_MAPPER[version_date]][symbol]
+        key = "#{VERSION_DATE_MAPPER[version_date]}:#{symbol}"
+        JSON.parse(@redis_client.get(key))
       end
 
       def process_all_versions
@@ -35,7 +39,10 @@ module Sax2pats
 
       def process(version)
         @current_version = version
-        @metadata[version] ||= {}
+        @redis = Redis::Namespace.new(
+          @current_version.to_sym,
+          redis: @redis_client
+        )
         return unless VERSION_FILE_MAPPER.key?(version)
 
         Zip::File.open(version_path(version)) do |zip_file|
@@ -54,11 +61,14 @@ module Sax2pats
         parent_symbol = parent_item ? parent_item['classification-symbol'] : nil
         symbol = class_item['classification-symbol']
         title = class_item['class-title'].to_hash if class_item['class-title']
-        @metadata[@current_version][symbol.to_s] = {
-          symbol: symbol.to_s,
-          parent: parent_symbol,
-          title: title
-        }
+        @redis.set(
+          symbol.to_s,
+          {
+            symbol: symbol.to_s,
+            parent: parent_symbol,
+            title: title
+          }.to_json
+        )
       end
 
       private

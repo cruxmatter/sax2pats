@@ -1,9 +1,10 @@
 module Sax2pats
   class SplitProcessor < Processor
     def after_initialize
-      return unless @config.include_cpc_metadata?
-
-      @config.load_cpc_metadata
+      
+      if @config.include_cpc_metadata?
+        @config.load_cpc_metadata
+      end
     end
 
     def parse_patent(patent_doc)
