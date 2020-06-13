@@ -109,6 +109,16 @@ shared_examples 'an assignee' do
   end
 end
 
+shared_examples 'an examiner' do
+  it '#last_name' do
+    expect(examiner.last_name).to eq expected_examiner_last_name
+  end
+
+  it '#department' do
+    expect(examiner.department).to eq expected_assignee_department
+  end
+end
+
 shared_examples 'a drawing' do
   it 'drawings' do
     expect(drawing.id).to eq expected_drawing_id
@@ -469,6 +479,14 @@ RSpec.describe Sax2pats do
       let(:patent_doc_number) { '09537659' }
           
       include_context 'a parsed patent'
+
+      context 'primary examiner' do
+        let(:examiner) { patent_1.examiners.first }
+        let(:expected_examiner_last_name) { nil }
+        let(:expected_examiner_department) { nil }
+
+        it_behaves_like 'an examiner'
+      end
 
       context 'citation' do
         let(:citation) do

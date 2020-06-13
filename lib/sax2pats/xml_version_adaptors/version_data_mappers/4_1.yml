@@ -29,6 +29,11 @@ patent:
     - us-bibliographic-data-grant
     - assignees
     - assignee
+  examiners:
+    - us-bibliographic-data-grant
+    - examiners
+    - primary-examiner: primary-examiner
+      assistant-examiner: assistant-examiner
   claims:
     - claims
     - claim

@@ -29,6 +29,11 @@ patent:
     - us-bibliographic-data-grant
     - assignees
     - assignee
+  examiners:
+    - us-bibliographic-data-grant
+    - examiners
+    - primary-examiner: primary-examiner
+      assistant-examiner: assistant-examiner
   claims:
     - claims
     - claim
@@ -67,6 +72,13 @@ inventor:
   last_name:
     - addressbook
     - last-name
+examiner:
+  first_name:
+    - first-name
+  last_name:
+    - last-name
+  department:
+    - department
 assignee:
   first_name:
     - addressbook

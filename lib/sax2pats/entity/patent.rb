@@ -19,6 +19,7 @@ module Sax2pats
     include Entity
     attr_accessor :inventors,
                   :assignees,
+                  :examiners,
                   :citations,
                   :claims,
                   :drawings,
@@ -39,6 +40,7 @@ module Sax2pats
       @application_reference = {}
       @inventors = []
       @assignees = []
+      @examiners = []
       @citations = []
       @claims = []
       @drawings = []
