@@ -6,8 +6,8 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/redis
       - image: circleci/ruby:2.4
+      - image: circleci/redis
 
     working_directory: ~/sax2pats
 
