@@ -6,7 +6,8 @@ version: 2
 jobs:
   build:
     docker:
-       - image: circleci/ruby:2.4
+      - image: circleci/redis
+      - image: circleci/ruby:2.4
 
     working_directory: ~/sax2pats
 
@@ -15,9 +16,9 @@ jobs:
 
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "Gemfile.lock" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
+            - v1-dependencies-{{ checksum "Gemfile.lock" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
 
       - run:
           name: install dependencies
