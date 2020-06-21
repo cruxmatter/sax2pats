@@ -7,8 +7,6 @@ require 'redis-namespace'
 module Sax2pats
   module CPC
     class Loader
-      attr_accessor :classifications, :metadata
-
       VERSION_FILE_MAPPER = {
         '201908' => 'cpc_201908.zip',
         '201309' => 'cpc_201309.zip'
@@ -21,23 +19,39 @@ module Sax2pats
         '20150115' => '201908'
       }
 
-      def initialize
+      ALL_LOADED_KEY = 'all_loaded'.freeze
+
+      def initialize(redis_host: nil, redis_port: nil, redis_password: nil)
         @current_version = nil
-        @redis_client = Redis.new
+        @redis_client = Redis.new(**{
+          host: redis_host,
+          port: redis_port,
+          password: redis_password
+        }.compact)
       end
 
-      def title(version_date, symbol)
-        key = "#{VERSION_DATE_MAPPER[version_date]}:#{symbol}"
+      def title(symbol, cpc_release_date: nil, cpc_version_indicator: nil)
+        key = "#{cpc_release_date || VERSION_DATE_MAPPER[cpc_version_indicator]}:#{symbol}"
         JSON.parse(@redis_client.get(key))
       end
 
-      def process_all_versions
-        VERSION_FILE_MAPPER.keys.each do |version|
-          process(version)
-        end
+      def loaded?
+        @redis_client.get(ALL_LOADED_KEY) == 'true'
       end
 
-      def process(version)
+      def clear_data!
+        @redis_client.flushall
+      end
+
+      def process_all_versions!
+        VERSION_FILE_MAPPER.keys.each do |version|
+          process!(version)
+        end
+
+        @redis_client.set(ALL_LOADED_KEY, true)
+      end
+
+      def process!(version)
         @current_version = version
         @redis = Redis::Namespace.new(
           @current_version.to_sym,
@@ -69,6 +83,10 @@ module Sax2pats
             title: title
           }.to_json
         )
+      end
+
+      def key_size
+        @redis_client.dbsize
       end
 
       private

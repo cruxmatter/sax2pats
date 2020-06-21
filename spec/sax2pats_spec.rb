@@ -148,7 +148,7 @@ shared_context 'parsed patents' do
     patent_handler = proc { |pt| @patents << pt }
     filename = File.join(File.dirname(__FILE__), @file_name)
     h = Sax2pats::SplitProcessor.new(File.open(filename, 'r'), patent_handler) do |config|
-      config.include_cpc_metadata = @include_cpc_metadata
+      config.set_cpc_config(@cpc_metadata)
     end
     h.parse_patents
     @patents
@@ -175,7 +175,9 @@ RSpec.describe Sax2pats do
   describe 'SAX parse USPTO Patent XML' do
     context 'from version 4.1' do
       before(:all) do 
-        @include_cpc_metadata = false
+        @cpc_metadata = {
+          include_cpc_metadata: false
+        }
         @file_name = 'test_41.xml'
       end
 
@@ -228,7 +230,9 @@ RSpec.describe Sax2pats do
 
     context 'from version 4.5' do
       before(:all) do 
-        @include_cpc_metadata = false
+        @cpc_metadata = {
+          include_cpc_metadata: false
+        }
         @file_name = 'test_45.xml'
       end
 
@@ -430,7 +434,9 @@ RSpec.describe Sax2pats do
       let(:expected_patent_count) { 130 }
 
       before(:all) do 
-        @include_cpc_metadata = true
+        @cpc_metadata = {
+          include_cpc_metadata: true
+        }
         @file_name = 'test_45.xml'
       end
 
