@@ -26,11 +26,13 @@ class Configuration
 
     return unless include_cpc_metadata?
 
-    @cpc_client_config = cpc_metadata_config.slice(
-      :redis_host,
-      :redis_port,
-      :redis_password
-    )
+    @cpc_client_config = cpc_metadata_config.select do |k,v|
+      [
+        :redis_host,
+        :redis_port,
+        :redis_password
+      ].include? k
+    end
   end
 
   def include_cpc_metadata?

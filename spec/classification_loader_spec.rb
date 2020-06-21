@@ -28,7 +28,7 @@ describe 'CPC::Loader' do
     it { expect(@loader.loaded?).to eq true }
 
     it 'keys exist and are accessible' do 
-      expect(@loader.title('C12Y603/02024', cpc_release_date: '201309').parent)
+      expect(@loader.title('C12Y603/02024', cpc_release_date: '201309').fetch('parent'))
         .to eq 'C12Y603/02'
     end
 
