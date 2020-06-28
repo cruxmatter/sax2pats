@@ -3,8 +3,8 @@ class Configuration
   attr_accessor :included_patent_types,
                 :included_patent_states,
                 :include_cpc_metadata,
-                :cpc_client_config,
-                :cpc_metadata # TODO: rename to client and move
+                :cpc_config,
+                :cpc_metadata # TODO: rename to client
 
   def initialize(
     included_patent_types: %i[utility design plant],
@@ -26,11 +26,12 @@ class Configuration
 
     return unless include_cpc_metadata?
 
-    @cpc_client_config = cpc_metadata_config.select do |k,v|
+    @cpc_config = cpc_metadata_config.select do |k,v|
       [
         :redis_host,
         :redis_port,
-        :redis_password
+        :redis_password,
+        :data_path
       ].include? k
     end
   end
@@ -43,7 +44,7 @@ class Configuration
     return unless include_cpc_metadata?
     
     cpc_loader = Sax2pats::CPC::Loader.new(
-      **cpc_client_config
+      **cpc_config
     )
 
     unless cpc_loader.loaded?

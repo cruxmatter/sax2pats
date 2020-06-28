@@ -10,29 +10,37 @@ module Sax2pats
       VERSION_FILE_MAPPER = {
         '201908' => 'cpc_201908.zip',
         '201309' => 'cpc_201309.zip'
-      }
+      }.freeze
 
       # The cpc version indicator in the patent xml
       # needs to be mapped to a cpc version release
       VERSION_DATE_MAPPER = {
         '20130101' => '201309',
         '20150115' => '201908'
-      }
+      }.freeze
+
+      CPC_DATA_PATH = [
+        'lib',
+        'sax2pats',
+        'classifications',
+        'data',
+      ].freeze
 
       ALL_LOADED_KEY = 'all_loaded'.freeze
 
-      def initialize(redis_host: nil, redis_port: nil, redis_password: nil)
+      def initialize(redis_host: nil, redis_port: nil, redis_password: nil, data_path: nil)
         @current_version = nil
         @redis_client = Redis.new(**{
           host: redis_host,
           port: redis_port,
           password: redis_password
         }.compact)
+        @data_path = data_path || CPC_DATA_PATH
       end
 
       def title(symbol, cpc_release_date: nil, cpc_version_indicator: nil)
         key = "#{cpc_release_date || VERSION_DATE_MAPPER[cpc_version_indicator]}:#{symbol}"
-        JSON.parse(@redis_client.get(key))
+        JSON.parse(@redis_client.get(key) || '{}')
       end
 
       def loaded?
@@ -96,10 +104,7 @@ module Sax2pats
 
         File.join(
           root,
-          'lib',
-          'sax2pats',
-          'classifications',
-          'data',
+          *@data_path,
           VERSION_FILE_MAPPER[version]
         )
       end

@@ -429,13 +429,12 @@ RSpec.describe Sax2pats do
     end
 
     context 'with loading cpc metadata' do
-      # let!(:file_name) { 'test_45.xml' }
-      # let!(:include_cpc_metadata) { true }
       let(:expected_patent_count) { 130 }
 
       before(:all) do 
         @cpc_metadata = {
-          include_cpc_metadata: true
+          include_cpc_metadata: true,
+          data_path: ['spec', 'classification_data']
         }
         @file_name = 'test_45.xml'
       end
