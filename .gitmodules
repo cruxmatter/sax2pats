@@ -1,0 +1,4 @@
+[submodule "cpc-classifications"]
+	path = cpc-classifications
+	url = git@github.com:cruxmatter/cpc-classifications.git
+	branch = master
