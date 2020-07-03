@@ -40,6 +40,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "saxerator"
   spec.add_development_dependency "redis"
   spec.add_development_dependency "redis-namespace"
+  spec.add_development_dependency "dotenv"
   spec.add_runtime_dependency "ox"
   spec.add_runtime_dependency "rubyzip"
   spec.add_runtime_dependency "saxerator"

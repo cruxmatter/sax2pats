@@ -434,6 +434,7 @@ RSpec.describe Sax2pats do
       before(:all) do 
         @cpc_metadata = {
           include_cpc_metadata: true,
+          redis_client: Redis.new,
           data_path: ['spec', 'classification_data']
         }
         @file_name = 'test_45.xml'

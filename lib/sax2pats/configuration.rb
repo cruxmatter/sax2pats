@@ -28,9 +28,8 @@ class Configuration
 
     @cpc_config = cpc_metadata_config.select do |k,v|
       [
-        :redis_host,
-        :redis_port,
-        :redis_password,
+        :redis_client,
+        :redis_namespace,
         :data_path
       ].include? k
     end
@@ -44,7 +43,8 @@ class Configuration
     return unless include_cpc_metadata?
     
     cpc_loader = Sax2pats::CPC::Loader.new(
-      **cpc_config
+      cpc_config.fetch(:redis_client),
+      options=cpc_config
     )
 
     unless cpc_loader.loaded?

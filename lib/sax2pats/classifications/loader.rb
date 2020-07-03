@@ -31,20 +31,13 @@ module Sax2pats
       ALL_LOADED_KEY = 'all_loaded'.freeze
 
       def initialize(
-        redis_host: nil,
-        redis_port: nil,
-        redis_password: nil,
-        redis_namespace: nil,
-        data_path: nil
+        redis_client,
+        options={}
       )
         @current_version = nil
-        @redis_namespace = redis_namespace
-        @redis_client = Redis.new(**{
-          host: redis_host,
-          port: redis_port,
-          password: redis_password
-        }.compact)
-        @data_path = data_path || CPC_DATA_PATH
+        @redis_namespace = options.dig(:redis_namespace)
+        @redis_client = redis_client
+        @data_path = options.dig(:data_path) || CPC_DATA_PATH
       end
 
       def title(symbol, cpc_release_date: nil, cpc_version_indicator: nil)
