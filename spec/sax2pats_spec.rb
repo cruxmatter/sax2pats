@@ -2,6 +2,17 @@
 
 require 'spec_helper'
 
+shared_examples 'a parsed patent file' do
+  it 'has correct number of patents' do
+    expect(patents.size).to eq expected_patent_count
+  end
+
+  it 'has correct number of patent claims' do
+    expect(patents.map { |pt| pt.claims.size })
+      .to match_array(patents.map { |pt| pt.number_of_claims.to_i })
+  end
+end
+
 shared_examples 'a patent' do
   it 'has xml version' do
     expect(patent.from_version).to eq expected_version
@@ -123,11 +134,36 @@ shared_examples 'a cpc classification' do
   end
 
   it '#title' do
-    expect(cpc_classification.title[:title]).to eq expected_cpc_title
+    expect(cpc_classification.title['title']).to eq expected_cpc_title
   end
 
   it '#action_date' do
     expect(cpc_classification.action_date.year).to eq expected_cpc_action_date_year
+  end
+end
+
+shared_context 'parsed patents' do
+  before(:all) do
+    @patents = []
+    patent_handler = proc { |pt| @patents << pt }
+    filename = File.join(File.dirname(__FILE__), @file_name)
+    h = Sax2pats::SplitProcessor.new(File.open(filename, 'r'), patent_handler) do |config|
+      config.set_cpc_config(@cpc_metadata)
+    end
+    h.parse_patents
+    @patents
+  end
+
+  let(:patents) { @patents }
+
+  it_behaves_like 'a parsed patent file'
+end
+
+shared_context 'a parsed patent' do
+  let(:patent) do
+    patents.detect do |pat|
+      pat.publication_reference['document-id']['doc-number'] == patent_doc_number
+    end
   end
 end
 
@@ -138,27 +174,16 @@ RSpec.describe Sax2pats do
 
   describe 'SAX parse USPTO Patent XML' do
     context 'from version 4.1' do
-      before(:all) do
-        @patents = []
-        patent_handler = proc { |pt| @patents << pt }
-        filename = File.join(File.dirname(__FILE__), 'test_41.xml')
-        h = Sax2pats::SplitProcessor.new(File.open(filename, 'r'), patent_handler)
-        h.parse_patents
+      before(:all) do 
+        @cpc_metadata = {
+          include_cpc_metadata: false
+        }
+        @file_name = 'test_41.xml'
       end
 
-      it 'parsed all patents' do
-        expect(@patents.size).to eq 96
-      end
+      let(:expected_patent_count) { 96 }
 
-      it 'patent claims' do
-        expect(@patents.map { |pt| pt.claims.size }.take(10)).to match_array(@patents.map { |pt| pt.number_of_claims.to_i }.take(10))
-      end
-
-      let(:patent) do
-        @patents.detect do |pat|
-          pat.publication_reference['document-id']['doc-number'] == '06982246'
-        end
-      end
+      include_context 'parsed patents'
 
       describe 'patent' do
         let(:expected_version) { '4.1' }
@@ -166,7 +191,9 @@ RSpec.describe Sax2pats do
         let(:expected_national_classifications_size) { 0 }
 
         context 'utility patent' do
-          let(:expected_invention_title) { 'Cytomodulating peptide for inhibiting lymphocyte activity' }
+          let(:expected_invention_title) do
+            'Cytomodulating peptide for inhibiting lymphocyte activity'
+          end
           let(:expected_pub_ref_hash) do
             {
               'doc-number' => '06982246',
@@ -192,6 +219,9 @@ RSpec.describe Sax2pats do
           # This patent has "sequences" instead of drawings
           let(:expected_patent_drawings_size) { 0 }
 
+          let(:patent_doc_number) { '06982246' }
+
+          include_context 'a parsed patent'
           it_behaves_like 'a patent'
           it_behaves_like 'a patent with abstract'
         end
@@ -199,41 +229,16 @@ RSpec.describe Sax2pats do
     end
 
     context 'from version 4.5' do
-      let(:patent_1) do
-        @patents.detect do |patent|
-          patent.publication_reference['document-id']['doc-number'] == '09537659'
-        end
+      before(:all) do 
+        @cpc_metadata = {
+          include_cpc_metadata: false
+        }
+        @file_name = 'test_45.xml'
       end
 
-      let(:patent_2) do
-        @patents.detect do |patent|
-          patent.publication_reference['document-id']['doc-number'] == '09537792'
-        end
-      end
+      let(:expected_patent_count) { 130 }
 
-      let(:patent_3) do
-        @patents.detect do |patent|
-          patent.publication_reference['document-id']['doc-number'] == '09537663'
-        end
-      end
-
-      before(:all) do
-        @patents = []
-        patent_handler = proc { |pt| @patents << pt }
-        filename = File.join(File.dirname(__FILE__), 'test_45.xml')
-        h = Sax2pats::SplitProcessor.new(File.open(filename, 'r'), patent_handler) do |config|
-          config.include_cpc_metadata = true
-        end
-        h.parse_patents
-      end
-
-      it 'parsed all patents' do
-        expect(@patents.size).to eq 130
-      end
-
-      it 'patent claims' do
-        expect(@patents.map { |pt| pt.claims.size }).to match_array(@patents.map { |pt| pt.number_of_claims.to_i })
-      end
+      include_context 'parsed patents'
 
       describe 'patent' do
         let(:expected_version) { '4.5' }
@@ -241,7 +246,6 @@ RSpec.describe Sax2pats do
         let(:expected_national_classifications_size) { 0 }
 
         context 'patent 1' do
-          let(:patent) { patent_1 }
           let(:expected_invention_title) { 'Authenticating a user device to access services based on a device ID' }
           let(:expected_pub_ref_hash) do
             {
@@ -266,12 +270,32 @@ RSpec.describe Sax2pats do
           let(:expected_ipc_classifications_size) { 2 }
           let(:expected_patent_drawings_size) { 9 }
 
+          let(:patent_doc_number) { '09537659' }
+          
+          include_context 'a parsed patent'
           it_behaves_like 'a patent'
           it_behaves_like 'a patent with abstract'
+
+          context 'citation' do
+            let(:citation) do
+              patent.citations.first
+            end
+            let(:expected_document_id) do
+              {
+                'doc-number' => '8607306',
+                'country' => 'US',
+                'kind' => 'B1',
+                'name' => 'Bridge',
+                'date' => '20131200'
+              }
+            end
+            let(:expected_citation_national_class) { 'US' }
+    
+            it_behaves_like 'a citation'
+          end
         end
 
         context 'patent 2' do
-          let(:patent) { patent_2 }
           let(:expected_descr_fragment) do
             'Computer program code for carrying out operations for aspects of the present inventive subject matter may be written in any combination of one or more programming languages, including an object oriented programming language such as Java, Smalltalk, C++ or the like and conventional procedural programming languages, such as the “C” programming language or similar programming languages.'
           end
@@ -323,8 +347,38 @@ RSpec.describe Sax2pats do
           let(:expected_cpc_classifications_size) { 7 }
           let(:expected_ipc_classifications_size) { 4 }
 
+          let(:patent_doc_number) { '09537792' }
+          
+          include_context 'a parsed patent'
           it_behaves_like 'a patent'
           it_behaves_like 'a patent with abstract'
+
+          context 'drawing' do
+            let(:drawing) { patent.drawings.first }
+            let(:expected_drawing_id) { 'Fig-EMI-D00000' }
+            let(:expected_drawing_doc) do
+              '<figure id="Fig-EMI-D00000" num="00000"><img id="EMI-D00000" he="171.45mm" wi="267.04mm" file="US09537792-20170103-D00000.TIF" alt="embedded image" img-content="drawing" img-format="tif"></img></figure>'
+            end
+    
+            it_behaves_like 'a drawing'
+          end
+
+          context 'inventor' do
+            let(:inventor) { patent.inventors.first }
+            let(:expected_inventor_last_name) { 'Rouhana' }
+    
+            it_behaves_like 'an inventor'
+          end
+
+          context 'claim' do
+            let(:claim) { patent.claims.first }
+            let(:expected_claim_id) { 'CLM-00001' }
+            let(:expected_claim_doc) do
+              '<claim id="CLM-00001" num="00001"><claim-text>1. A method for data transmission, the method comprising: <claim-text>determining, by a master network device, to transmit data from the master network device to a plurality of client network devices;</claim-text><claim-text>generating, by the master network device, a data frame including a payload, the payload including a first plurality of symbols arranged in a pattern that is known to the plurality of client network devices; and</claim-text><claim-text>allocating, by the master network device, at least one symbol of the first plurality of symbols to each of the plurality of client network devices, wherein at least a first symbol of the first plurality of symbols is allocated only to a first client network device of the plurality of client network devices.</claim-text></claim-text></claim>'
+            end
+    
+            it_behaves_like 'a claim'
+          end
         end
 
         context 'patent 3' do
@@ -356,58 +410,45 @@ RSpec.describe Sax2pats do
           let(:expected_ipc_classifications_size) { 3 }
           let(:expected_patent_citations_size) { 64 }
 
+          let(:patent_doc_number) { '09537663' }
+          
+          include_context 'a parsed patent'
           it_behaves_like 'a patent'
           it_behaves_like 'a patent with abstract'
+
+          context 'National_classification' do
+            let(:national_classification) do
+              patent.national_classifications.first
+            end
+            let(:expected_main_class) { '380277' }
+  
+            it_behaves_like 'a national classification'
+          end
         end
       end
+    end
 
-      context 'claim' do
-        let(:claim) { patent_2.claims.first }
-        let(:expected_claim_id) { 'CLM-00001' }
-        let(:expected_claim_doc) do
-          '<claim id="CLM-00001" num="00001"><claim-text>1. A method for data transmission, the method comprising: <claim-text>determining, by a master network device, to transmit data from the master network device to a plurality of client network devices;</claim-text><claim-text>generating, by the master network device, a data frame including a payload, the payload including a first plurality of symbols arranged in a pattern that is known to the plurality of client network devices; and</claim-text><claim-text>allocating, by the master network device, at least one symbol of the first plurality of symbols to each of the plurality of client network devices, wherein at least a first symbol of the first plurality of symbols is allocated only to a first client network device of the plurality of client network devices.</claim-text></claim-text></claim>'
-        end
+    context 'with loading cpc metadata' do
+      let(:expected_patent_count) { 130 }
 
-        it_behaves_like 'a claim'
+      before(:all) do 
+        @cpc_metadata = {
+          include_cpc_metadata: true,
+          redis_client: Redis.new,
+          data_path: ['spec', 'classification_data']
+        }
+        @file_name = 'test_45.xml'
       end
 
-      context 'inventor' do
-        let(:inventor) { patent_2.inventors.first }
-        let(:expected_inventor_last_name) { 'Rouhana' }
-
-        it_behaves_like 'an inventor'
-      end
-
-      context 'citation' do
-        let(:citation) do
-          patent_1.citations.first
-        end
-        let(:expected_document_id) do
-          {
-            'doc-number' => '8607306',
-            'country' => 'US',
-            'kind' => 'B1',
-            'name' => 'Bridge',
-            'date' => '20131200'
-          }
-        end
-        let(:expected_citation_national_class) { 'US' }
-
-        it_behaves_like 'a citation'
-      end
+      include_context 'parsed patents'
+      
+      let(:patent_doc_number) { '09537659' }
+          
+      include_context 'a parsed patent'
 
       context 'classifications' do
-        context 'National_classification' do
-          let(:national_classification) do
-            patent_3.national_classifications.first
-          end
-          let(:expected_main_class) { '380277' }
-
-          it_behaves_like 'a national classification'
-        end
-
         context 'CPC Classification' do
-          let(:cpc_classification) { patent_1.cpc_classifications.first }
+          let(:cpc_classification) { patent.cpc_classifications.first }
           let(:expected_cclass) { '04' }
           let(:expected_cpc_title) { 
             {
@@ -421,16 +462,6 @@ RSpec.describe Sax2pats do
 
           it_behaves_like 'a cpc classification'
         end
-      end
-
-      context 'drawing' do
-        let(:drawing) { patent_2.drawings.first }
-        let(:expected_drawing_id) { 'Fig-EMI-D00000' }
-        let(:expected_drawing_doc) do
-          '<figure id="Fig-EMI-D00000" num="00000"><img id="EMI-D00000" he="171.45mm" wi="267.04mm" file="US09537792-20170103-D00000.TIF" alt="embedded image" img-content="drawing" img-format="tif"></img></figure>'
-        end
-
-        it_behaves_like 'a drawing'
       end
     end
   end

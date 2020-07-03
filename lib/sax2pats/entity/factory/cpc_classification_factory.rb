@@ -56,8 +56,8 @@ class CPCClassificationFactory < EntityFactory
     @entity.title =
       @cpc_metadata
       .title(
-        @entity.version_date.strftime("%Y%m%d"),
-        @entity.symbol
+        @entity.symbol,
+        cpc_version_indicator: @entity.version_date.strftime("%Y%m%d")
       )
   end
 end

@@ -1,41 +1,83 @@
 require 'yaml'
+require 'json'
 require 'zip'
+require 'redis'
+require 'redis-namespace'
 
 module Sax2pats
   module CPC
-    class Loader
-      attr_accessor :classifications, :metadata
+    class LoadingError < StandardError; end
 
+    class Loader
       VERSION_FILE_MAPPER = {
         '201908' => 'cpc_201908.zip',
         '201309' => 'cpc_201309.zip'
-      }
+      }.freeze
 
       # The cpc version indicator in the patent xml
       # needs to be mapped to a cpc version release
       VERSION_DATE_MAPPER = {
         '20130101' => '201309',
         '20150115' => '201908'
-      }
+      }.freeze
 
-      def initialize
-        @metadata = {}
+      CPC_DATA_PATH = [
+        'lib',
+        'sax2pats',
+        'classifications',
+        'data',
+      ].freeze
+
+      ALL_LOADED_KEY = 'all_loaded'.freeze
+
+      def initialize(
+        redis_client,
+        options={}
+      )
         @current_version = nil
+        @redis_namespace = options.dig(:redis_namespace)
+        @redis_client = redis_client
+        @data_path = options.dig(:data_path) || CPC_DATA_PATH
       end
 
-      def title(version_date, symbol)
-        @metadata[VERSION_DATE_MAPPER[version_date]][symbol]
-      end
-
-      def process_all_versions
-        VERSION_FILE_MAPPER.keys.each do |version|
-          process(version)
+      def title(symbol, cpc_release_date: nil, cpc_version_indicator: nil)
+        version_key = "#{cpc_release_date || VERSION_DATE_MAPPER[cpc_version_indicator]}"
+        unless VERSION_FILE_MAPPER.keys.include?(version_key)
+          raise LoadingError.new("Unrecognized version date #{version_key}")
         end
+        key = [
+          @redis_namespace,
+          version_key,
+          symbol
+        ].compact.join(':')
+        JSON.parse(@redis_client.get(key) || '{}')
       end
 
-      def process(version)
+      def loaded?
+        @redis_client.get(ALL_LOADED_KEY) == 'true'
+      end
+
+      def clear_data!
+        @redis_client.flushall
+      end
+
+      def process_all_versions!
+        VERSION_FILE_MAPPER.keys.each do |version|
+          process!(version)
+        end
+
+        @redis_client.set(ALL_LOADED_KEY, true)
+      end
+
+      def process!(version)
         @current_version = version
-        @metadata[version] ||= {}
+        @redis = Redis::Namespace.new(
+          [
+            @redis_namespace,
+            @current_version.to_sym
+          ].compact.join(':'),
+          redis: @redis_client
+        )
         return unless VERSION_FILE_MAPPER.key?(version)
 
         Zip::File.open(version_path(version)) do |zip_file|
@@ -54,11 +96,18 @@ module Sax2pats
         parent_symbol = parent_item ? parent_item['classification-symbol'] : nil
         symbol = class_item['classification-symbol']
         title = class_item['class-title'].to_hash if class_item['class-title']
-        @metadata[@current_version][symbol.to_s] = {
-          symbol: symbol.to_s,
-          parent: parent_symbol,
-          title: title
-        }
+        @redis.set(
+          symbol.to_s,
+          {
+            symbol: symbol.to_s,
+            parent: parent_symbol,
+            title: title
+          }.to_json
+        )
+      end
+
+      def key_size
+        @redis_client.dbsize
       end
 
       private
@@ -68,10 +117,7 @@ module Sax2pats
 
         File.join(
           root,
-          'lib',
-          'sax2pats',
-          'classifications',
-          'data',
+          *@data_path,
           VERSION_FILE_MAPPER[version]
         )
       end
