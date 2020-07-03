@@ -7,11 +7,13 @@ describe 'CPC::Loader' do
   let(:redis_host) { nil }
   let(:redis_port) { nil }
   let(:redis_password) { nil }
+  let(:redis_namespace) { nil }
   let(:loader) do
     Sax2pats::CPC::Loader.new(
       redis_host: redis_host,
       redis_port: redis_port,
       redis_password: redis_password,
+      redis_namespace: redis_namespace,
       data_path: spec_data_path
     ) 
   end

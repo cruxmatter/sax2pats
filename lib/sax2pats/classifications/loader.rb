@@ -30,8 +30,15 @@ module Sax2pats
 
       ALL_LOADED_KEY = 'all_loaded'.freeze
 
-      def initialize(redis_host: nil, redis_port: nil, redis_password: nil, data_path: nil)
+      def initialize(
+        redis_host: nil,
+        redis_port: nil,
+        redis_password: nil,
+        redis_namespace: nil,
+        data_path: nil
+      )
         @current_version = nil
+        @redis_namespace = redis_namespace
         @redis_client = Redis.new(**{
           host: redis_host,
           port: redis_port,
@@ -45,7 +52,11 @@ module Sax2pats
         unless VERSION_FILE_MAPPER.keys.include?(version_key)
           raise LoadingError.new("Unrecognized version date #{version_key}")
         end
-        key = "#{version_key}:#{symbol}"
+        key = [
+          @redis_namespace,
+          version_key,
+          symbol
+        ].compact.join(':')
         JSON.parse(@redis_client.get(key) || '{}')
       end
 
@@ -68,7 +79,10 @@ module Sax2pats
       def process!(version)
         @current_version = version
         @redis = Redis::Namespace.new(
-          @current_version.to_sym,
+          [
+            @redis_namespace,
+            @current_version.to_sym
+          ].compact.join(':'),
           redis: @redis_client
         )
         return unless VERSION_FILE_MAPPER.key?(version)
