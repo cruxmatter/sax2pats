@@ -6,6 +6,8 @@ require 'redis-namespace'
 
 module Sax2pats
   module CPC
+    class LoadingError < StandardError; end
+
     class Loader
       VERSION_FILE_MAPPER = {
         '201908' => 'cpc_201908.zip',
@@ -39,7 +41,11 @@ module Sax2pats
       end
 
       def title(symbol, cpc_release_date: nil, cpc_version_indicator: nil)
-        key = "#{cpc_release_date || VERSION_DATE_MAPPER[cpc_version_indicator]}:#{symbol}"
+        version_key = "#{cpc_release_date || VERSION_DATE_MAPPER[cpc_version_indicator]}"
+        unless VERSION_FILE_MAPPER.keys.include?(version_key)
+          raise LoadingError.new("Unrecognized version date #{version_key}")
+        end
+        key = "#{version_key}:#{symbol}"
         JSON.parse(@redis_client.get(key) || '{}')
       end
 

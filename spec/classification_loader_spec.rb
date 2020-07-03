@@ -38,5 +38,9 @@ describe 'CPC::Loader' do
     end
 
     it { expect { loader.clear_data! }.to change { loader.key_size }.to(0) }
+
+    it 'invalid version date raises error' do
+      expect { loader.title('A01B63/22', cpc_release_date: '190001') }.to raise_error(Sax2pats::CPC::LoadingError)
+    end
   end
 end
