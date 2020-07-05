@@ -55,6 +55,7 @@ module Sax2pats
         :inventors,
         :assignees,
         :examiners,
+        :applicants,
         :claims,
         :drawings,
         :citations,
@@ -125,6 +126,7 @@ module Sax2pats
       base.define_version_entity(version_mapper, 'inventor', 'InventorVersion')
       base.define_version_entity(version_mapper, 'assignee', 'AssigneeVersion')
       base.define_version_entity(version_mapper, 'examiner', 'ExaminerVersion')
+      base.define_version_entity(version_mapper, 'applicant', 'ApplicantVersion')
       base.define_version_entity(version_mapper, 'claim', 'ClaimVersion')
       base.define_version_entity(version_mapper, 'drawing', 'DrawingVersion')
       base.define_version_entity(version_mapper, 'citation', 'CitationVersion')

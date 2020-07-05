@@ -20,6 +20,7 @@ module Sax2pats
     attr_accessor :inventors,
                   :assignees,
                   :examiners,
+                  :applicants,
                   :citations,
                   :claims,
                   :drawings,
@@ -41,6 +42,7 @@ module Sax2pats
       @inventors = []
       @assignees = []
       @examiners = []
+      @applicants = []
       @citations = []
       @claims = []
       @drawings = []

@@ -20,6 +20,11 @@ patent:
     - number-of-claims
   abstract: abstract
   description: description
+  applicants:
+    - us-bibliographic-data-grant
+    - parties
+    - applicants
+    - applicant
   inventors:
     - us-bibliographic-data-grant
     - parties
@@ -79,6 +84,23 @@ examiner:
     - last-name
   department:
     - department
+applicant:
+  first_name:
+    - addressbook
+    - first-name
+  last_name:
+    - addressbook
+    - last-name
+  address:
+    - addressbook
+    - address
+  orgname:
+    - addressbook
+    - orgname
+  residence:
+    - residence
+  nationality:
+    - nationality
 assignee:
   first_name:
     - first-name

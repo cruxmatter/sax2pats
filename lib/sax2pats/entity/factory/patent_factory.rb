@@ -102,6 +102,12 @@ class PatentFactory < EntityFactory
         factory_class: ExaminerFactory
       },
       {
+        key: 'applicants',
+        adapter_method: :enumerate_child_applicants,
+        list: :applicants,
+        factory_class: ApplicantFactory
+      },
+      {
         key: 'claims',
         adapter_method: :enumerate_child_claims,
         list: :claims,
