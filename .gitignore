@@ -10,7 +10,5 @@
 *DS_Store*
 .env*
 
-*DS_Store*
-
 # rspec failure tracking
 .rspec_status

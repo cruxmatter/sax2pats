@@ -99,6 +99,36 @@ shared_examples 'an inventor' do
   end
 end
 
+shared_examples 'an assignee' do
+  it '#last_name' do
+    expect(assignee.last_name).to eq expected_assignee_last_name
+  end
+
+  it '#orgname' do
+    expect(assignee.orgname).to eq expected_assignee_orgname
+  end
+end
+
+shared_examples 'an applicant' do
+  it '#last_name' do
+    expect(applicant.last_name).to eq expected_applicant_last_name
+  end
+
+  it '#orgname' do
+    expect(applicant.orgname).to eq expected_applicant_orgname
+  end
+end
+
+shared_examples 'an examiner' do
+  it '#last_name' do
+    expect(examiner.last_name).to eq expected_examiner_last_name
+  end
+
+  it '#department' do
+    expect(examiner.department).to eq expected_examiner_department
+  end
+end
+
 shared_examples 'a drawing' do
   it 'drawings' do
     expect(drawing.id).to eq expected_drawing_id
@@ -224,6 +254,22 @@ RSpec.describe Sax2pats do
           include_context 'a parsed patent'
           it_behaves_like 'a patent'
           it_behaves_like 'a patent with abstract'
+
+          context 'applicant' do
+            let(:applicant) { patent.applicants.first }
+            let(:expected_applicant_last_name) { 'Buelow' }
+            let(:expected_applicant_orgname) { nil }
+
+            it_behaves_like 'an applicant'
+          end
+
+          context 'assignee' do
+            let(:assignee) { patent.assignees.first }
+            let(:expected_assignee_last_name) { nil }
+            let(:expected_assignee_orgname) { 'SangStat Medical Corporation' }
+
+            it_behaves_like 'an assignee'
+          end
         end
       end
     end
@@ -353,6 +399,22 @@ RSpec.describe Sax2pats do
           it_behaves_like 'a patent'
           it_behaves_like 'a patent with abstract'
 
+          context 'applicant' do
+            let(:applicant) { patent.applicants.first }
+            let(:expected_applicant_last_name) { nil }
+            let(:expected_applicant_orgname) { 'QUALCOMM Incorporated' }
+
+            it_behaves_like 'an applicant'
+          end
+
+          context 'assignee' do
+            let(:assignee) { patent.assignees.first }
+            let(:expected_assignee_last_name) { nil }
+            let(:expected_assignee_orgname) { 'QUALCOMM Incorporated' }
+
+            it_behaves_like 'an assignee'
+          end
+
           context 'drawing' do
             let(:drawing) { patent.drawings.first }
             let(:expected_drawing_id) { 'Fig-EMI-D00000' }
@@ -382,7 +444,6 @@ RSpec.describe Sax2pats do
         end
 
         context 'patent 3' do
-          let(:patent) { patent_3 }
           let(:expected_invention_title) { 'Manipulation and restoration of authentication challenge parameters in network authentication procedures' }
           let(:expected_inventors_size) { 3 }
           let(:expected_abstract_doc) do
@@ -425,6 +486,17 @@ RSpec.describe Sax2pats do
             it_behaves_like 'a national classification'
           end
         end
+
+        context 'patent 4' do 
+          include_context 'a parsed patent'
+          let(:patent_doc_number) { '09537660' }
+
+          let(:assignee) { patent.assignees.first }
+          let(:expected_assignee_last_name) { 'Wang' }
+          let(:expected_assignee_orgname) { nil }
+
+          it_behaves_like 'an assignee'
+        end
       end
     end
 
@@ -445,6 +517,32 @@ RSpec.describe Sax2pats do
       let(:patent_doc_number) { '09537659' }
           
       include_context 'a parsed patent'
+
+      context 'primary examiner' do
+        let(:examiner) { patent.examiners.first }
+        let(:expected_examiner_last_name) { 'Najjar' }
+        let(:expected_examiner_department) { '2492' }
+
+        it_behaves_like 'an examiner'
+      end
+
+      context 'citation' do
+        let(:citation) do
+          patent.citations.first
+        end
+        let(:expected_document_id) do
+          {
+            'doc-number' => '8607306',
+            'country' => 'US',
+            'kind' => 'B1',
+            'name' => 'Bridge',
+            'date' => '20131200'
+          }
+        end
+        let(:expected_citation_national_class) { 'US' }
+
+        it_behaves_like 'a citation'
+      end
 
       context 'classifications' do
         context 'CPC Classification' do

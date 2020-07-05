@@ -20,11 +20,25 @@ patent:
     - number-of-claims
   abstract: abstract
   description: description
+  applicants:
+    - us-bibliographic-data-grant
+    - parties
+    - applicants
+    - applicant
   inventors:
     - us-bibliographic-data-grant
     - parties
     - applicants
     - applicant
+  assignees:
+    - us-bibliographic-data-grant
+    - assignees
+    - assignee
+  examiners:
+    - us-bibliographic-data-grant
+    - examiners
+    - primary-examiner: primary-examiner
+      assistant-examiner: assistant-examiner
   claims:
     - claims
     - claim
@@ -63,6 +77,44 @@ inventor:
   last_name:
     - addressbook
     - last-name
+examiner:
+  first_name:
+    - first-name
+  last_name:
+    - last-name
+  department:
+    - department
+applicant:
+  first_name:
+    - addressbook
+    - first-name
+  last_name:
+    - addressbook
+    - last-name
+  address:
+    - addressbook
+    - address
+  orgname:
+    - addressbook
+    - orgname
+  residence:
+    - residence
+  nationality:
+    - nationality
+assignee:
+  first_name:
+    - first-name
+  last_name:
+    - last-name
+  orgname:
+    - addressbook
+    - orgname
+  role:
+    - addressbook
+    - role
+  address:
+    - addressbook
+    - address
 claim:
   claim_id: id
 drawing:

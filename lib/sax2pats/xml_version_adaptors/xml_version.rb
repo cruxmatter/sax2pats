@@ -7,21 +7,44 @@ module Sax2pats
 
     def initialize(entity_hash)
       @entity_attribute_hash = entity_hash
-      self.class.version_mapper.keys.map do |attr|
-        @entity_attribute_hash[attr] =
-          entity_hash.dig(*self.class.version_mapper[attr]) ||
-          entity_hash[attr]
+      self.class.version_mapper.keys.map do |attribute|
+        attrs_list = find_all_attribute_paths(self.class.version_mapper[attribute])
+        @entity_attribute_hash[attribute] = if attrs_list.size > 1
+          get_attributes_from_entity_hash(entity_hash, attrs_list)
+        else
+          entity_hash.dig(*self.class.version_mapper[attribute])
+        end
+        @entity_attribute_hash[attribute] = @entity_attribute_hash[attribute] || entity_hash[attribute]
       end
     end
 
+    def get_attributes_from_entity_hash(entity_hash, attrs_list)
+      attrs_list.map { |path| entity_hash.dig(*path) }.compact
+    end
+
+    def find_all_attribute_paths(lookup_path, paths=[], current_path=[])
+      lookup_path = Utility::array_wrap(lookup_path)
+      lookup_path.each do |key|
+        if key.is_a? String
+          current_path << key
+        elsif key.is_a? Hash
+          key.each do |k,v|
+            find_all_attribute_paths(v, paths, current_path.dup)
+          end
+        end
+      end
+      paths << current_path if lookup_path.last.is_a? String
+      paths
+    end
+
     def enumerate_child_entities(child_entities, filter_block: nil)
-      if child_entities.is_a?(Saxerator::Builder::HashElement)
-        yield child_entities
-      elsif child_entities.is_a?(Saxerator::Builder::ArrayElement)
+      if Utility::is_array?(child_entities)
         child_entities = filter_block.call(child_entities) if filter_block
         child_entities.each do |child_entity_hash|
           yield child_entity_hash
         end
+      elsif Utility::is_hash?(child_entities)
+        yield child_entities
       end
     end
   end
@@ -30,6 +53,9 @@ module Sax2pats
     module ClassMethods
       CHILD_ENTITIES = [
         :inventors,
+        :assignees,
+        :examiners,
+        :applicants,
         :claims,
         :drawings,
         :citations,
@@ -84,11 +110,10 @@ module Sax2pats
     def self.included(base)
       base.extend(ClassMethods)
 
-      root = Gem::Specification.find_by_name("sax2pats").gem_dir
       version_mapper = nil
       File.open(
         File.join(
-          root,
+          Utility::root,
           'lib',
           'sax2pats',
           'xml_version_adaptors',
@@ -99,6 +124,9 @@ module Sax2pats
 
       base.define_patent_version(version_mapper)
       base.define_version_entity(version_mapper, 'inventor', 'InventorVersion')
+      base.define_version_entity(version_mapper, 'assignee', 'AssigneeVersion')
+      base.define_version_entity(version_mapper, 'examiner', 'ExaminerVersion')
+      base.define_version_entity(version_mapper, 'applicant', 'ApplicantVersion')
       base.define_version_entity(version_mapper, 'claim', 'ClaimVersion')
       base.define_version_entity(version_mapper, 'drawing', 'DrawingVersion')
       base.define_version_entity(version_mapper, 'citation', 'CitationVersion')

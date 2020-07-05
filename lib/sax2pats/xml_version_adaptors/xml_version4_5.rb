@@ -4,9 +4,5 @@ module Sax2pats
     DATA_MAPPER_FILE = '4_5.yml'.freeze
 
     include Sax2pats::XMLVersion
-
-    # class LocarnoClassificationVersion
-    #   include Sax2pats::EntityVersion
-    # end
   end
 end
