@@ -8,9 +8,9 @@ module Sax2pats
     def initialize(entity_hash)
       @entity_attribute_hash = entity_hash
       self.class.version_mapper.keys.map do |attribute|
-        attrs_list = get_attributes_from_entity_hash(entity_hash, attribute)
+        attrs_list = find_all_attribute_paths(self.class.version_mapper[attribute])
         @entity_attribute_hash[attribute] = if attrs_list.size > 1
-          get_attributes_from_entity_hash(entity_hash, attribute)
+          get_attributes_from_entity_hash(entity_hash, attrs_list)
         else
           entity_hash.dig(*self.class.version_mapper[attribute])
         end
@@ -18,12 +18,8 @@ module Sax2pats
       end
     end
 
-    def get_attributes_from_entity_hash(entity_hash, attribute)
-      attributes = []
-      find_all_attribute_paths(self.class.version_mapper[attribute]).each do |path|
-        attributes << entity_hash.dig(*path)
-      end
-      attributes.compact
+    def get_attributes_from_entity_hash(entity_hash, attrs_list)
+      attrs_list.map { |path| entity_hash.dig(*path) }.compact
     end
 
     def find_all_attribute_paths(lookup_path, paths=[], current_path=[])
@@ -43,12 +39,12 @@ module Sax2pats
 
     def enumerate_child_entities(child_entities, filter_block: nil)
       if Utility::is_array?(child_entities)
-        yield child_entities
-      elsif Utility::is_hash?(child_entities)
         child_entities = filter_block.call(child_entities) if filter_block
         child_entities.each do |child_entity_hash|
           yield child_entity_hash
         end
+      elsif Utility::is_hash?(child_entities)
+        yield child_entities
       end
     end
   end

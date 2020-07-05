@@ -115,7 +115,7 @@ shared_examples 'an examiner' do
   end
 
   it '#department' do
-    expect(examiner.department).to eq expected_assignee_department
+    expect(examiner.department).to eq expected_examiner_department
   end
 end
 
@@ -481,9 +481,9 @@ RSpec.describe Sax2pats do
       include_context 'a parsed patent'
 
       context 'primary examiner' do
-        let(:examiner) { patent_1.examiners.first }
-        let(:expected_examiner_last_name) { nil }
-        let(:expected_examiner_department) { nil }
+        let(:examiner) { patent.examiners.first }
+        let(:expected_examiner_last_name) { 'Najjar' }
+        let(:expected_examiner_department) { '2492' }
 
         it_behaves_like 'an examiner'
       end
