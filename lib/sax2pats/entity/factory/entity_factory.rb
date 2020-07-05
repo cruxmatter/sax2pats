@@ -20,12 +20,14 @@ class EntityFactory
     @entity
   end
 
-  def attribute_keys
-    raise NotImplementedError
-  end
+  protected
 
   def attribute_types
     {}
+  end
+
+  def attribute_keys
+    raise NotImplementedError
   end
 
   def coerce_type(attr_key, attr_value)
