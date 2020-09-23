@@ -149,22 +149,26 @@ module Sax2pats
       base.define_version_entity(version_mapper, 'ipc_classification', 'IPCClassificationVersion')
       base.define_version_entity(version_mapper, 'national_classification', 'NationalClassificationVersion')
 
-      base.define_method(:patent_tag) do |state|
-        if state == :grant
-          version_mapper.dig('xml', 'patent_grant_tag')
-        elsif state == :application
-          version_mapper.dig('xml', 'patent_application_tag')
+      base.class_eval do 
+        define_method(:patent_tag) do |state|
+          if state == :grant
+            version_mapper.dig('xml', 'patent_grant_tag')
+          elsif state == :application
+            version_mapper.dig('xml', 'patent_application_tag')
+          end
         end
       end
-      base.define_method(:patent_type) do |state, patent_hash|
-        if state == :grant
-          patent_hash.dig(
-            *version_mapper.dig('patent_grant', 'patent_type')
-          )
-        elsif state == :application
-          patent_hash.dig(
-            *version_mapper.dig('patent_application', 'patent_type')
-          )
+      base.class_eval do 
+        define_method(:patent_type) do |state, patent_hash|
+          if state == :grant
+            patent_hash.dig(
+              *version_mapper.dig('patent_grant', 'patent_type')
+            )
+          elsif state == :application
+            patent_hash.dig(
+              *version_mapper.dig('patent_application', 'patent_type')
+            )
+          end
         end
       end
     end
