@@ -6,6 +6,10 @@ shared_examples 'a parsed patent file' do
   it 'has correct number of patents' do
     expect(patents.size).to eq expected_patent_count
   end
+end
+
+shared_examples 'a parsed patent grant file' do
+  it_behaves_like 'a parsed patent file'
 
   it 'has correct number of patent claims' do
     expect(patents.map { |pt| pt.claims.size })
@@ -20,11 +24,6 @@ shared_examples 'a patent' do
 
   it 'invention_title' do
     expect(patent.invention_title).to eq expected_invention_title
-  end
-
-  it 'number_of_claims' do
-    expect(patent.number_of_claims.is_a?(Integer)).to be_truthy
-    expect(patent.number_of_claims).to eq expected_patent_claims_size
   end
 
   it 'publication_reference' do
@@ -72,6 +71,15 @@ shared_examples 'a patent' do
 
   it 'national classifications size' do
     expect(patent.national_classifications.size).to eq expected_national_classifications_size
+  end
+end
+
+shared_examples 'a patent grant' do
+  it_behaves_like 'a patent'
+
+  it 'number_of_claims' do
+    expect(patent.number_of_claims.is_a?(Integer)).to be_truthy
+    expect(patent.number_of_claims).to eq expected_patent_claims_size
   end
 end
 
@@ -202,7 +210,102 @@ RSpec.describe Sax2pats do
     expect(Sax2pats::VERSION).not_to be nil
   end
 
-  describe 'SAX parse USPTO Patent XML' do
+  describe 'Sax parse USPTO Patent Application XML' do
+    context 'from version 4.4' do
+      before(:all) do 
+        @cpc_metadata = {
+          include_cpc_metadata: false
+        }
+        @file_name = 'test_44_applications.xml'
+      end
+
+      let(:expected_patent_count) { 2 }
+
+      include_context 'parsed patents'
+
+      describe 'patent' do
+        let(:expected_version) { '4.4' }
+        let(:expected_descr_fragment) { '' }
+        let(:expected_national_classifications_size) { 0 }
+
+        context 'utility patent' do
+          let(:expected_invention_title) do
+            'ADJUSTABLE CLOSING SYSTEM FOR AN AGRICULTURAL IMPLEMENT'
+          end
+          let(:expected_pub_ref_hash) do
+            {
+              'doc-number' => '20200281107',
+              'country' => 'US',
+              'kind' => 'A1',
+              'date' => '20200910'
+            }
+          end
+          let(:expected_abstract_doc) do
+            '<abstract id="abstract"><p id="p-0001" num="0000">A row unit of an agricultural implement includes an opening system configured to engage soil to form a furrow, sensors configured to detect a soil tightness, soil conditions, operational conditions, or a combination thereof, and a closing system configured to close the furrow. The closing system includes a first closing disc configured to engage the soil and close the furrow and a second closing disc configured to engage the soil and close the furrow. The row unit also includes a controller configured to receive feedback from the sensors and to control a position, an orientation, or both, of the first closing disc, the second closing disc, or both, in response to feedback from the sensors.</p></abstract>'
+          end
+          let(:expected_abstract_text) do
+            'A row unit of an agricultural implement includes an opening system configured to engage soil to form a furrow, sensors configured to detect a soil tightness, soil conditions, operational conditions, or a combination thereof, and a closing system configured to close the furrow. The closing system includes a first closing disc configured to engage the soil and close the furrow and a second closing disc configured to engage the soil and close the furrow. The row unit also includes a controller configured to receive feedback from the sensors and to control a position, an orientation, or both, of the first closing disc, the second closing disc, or both, in response to feedback from the sensors.'
+          end
+          let(:expected_claim_refs_array) { 
+            [
+              [],
+              ["CLM-00001"],
+              ["CLM-00001"],
+              ["CLM-00003"],
+              ["CLM-00004"],
+              ["CLM-00005"],
+              ["CLM-00001"],
+              ["CLM-00001"],
+              ["CLM-00001"],
+              [],
+              ["CLM-00010"],
+              ["CLM-00011"],
+              ["CLM-00010"],
+              ["CLM-00010"],
+              ["CLM-00014"],
+              [],
+              ["CLM-00016"],
+              ["CLM-00016"],
+              ["CLM-00016"],
+              ["CLM-00016"]
+            ] 
+          }
+          let(:expected_inventors_size) { 1 }
+          let(:expected_patent_citations_size) { 0 }
+          let(:expected_patent_claims_size) { 20 }
+          let(:expected_classifications_size) { 12 }
+          let(:expected_cpc_classifications_size) { 6 }
+          let(:expected_ipc_classifications_size) { 6 }
+          let(:expected_national_classifications_size) { 0 }
+          let(:expected_patent_drawings_size) { 8 }
+
+          let(:patent_doc_number) { '20200281107' }
+
+          include_context 'a parsed patent'
+          it_behaves_like 'a patent'
+          it_behaves_like 'a patent with abstract'
+
+          context 'applicant' do
+            let(:applicant) { patent.applicants.first }
+            let(:expected_applicant_last_name) { nil }
+            let(:expected_applicant_orgname) { 'CNH Industrial America LLC' }
+
+            it_behaves_like 'an applicant'
+          end
+
+          # context 'assignee' do
+          #   let(:assignee) { patent.assignees.first }
+          #   let(:expected_assignee_last_name) { nil }
+          #   let(:expected_assignee_orgname) { 'SangStat Medical Corporation' }
+
+          #   it_behaves_like 'an assignee'
+          # end
+        end
+      end
+    end
+  end
+
+  describe 'SAX parse USPTO Patent Grant XML' do
     context 'from version 4.1' do
       before(:all) do 
         @cpc_metadata = {
@@ -214,6 +317,7 @@ RSpec.describe Sax2pats do
       let(:expected_patent_count) { 96 }
 
       include_context 'parsed patents'
+      include_context 'a parsed patent grant file'
 
       describe 'patent' do
         let(:expected_version) { '4.1' }
@@ -252,7 +356,7 @@ RSpec.describe Sax2pats do
           let(:patent_doc_number) { '06982246' }
 
           include_context 'a parsed patent'
-          it_behaves_like 'a patent'
+          it_behaves_like 'a patent grant'
           it_behaves_like 'a patent with abstract'
 
           context 'applicant' do
@@ -285,6 +389,7 @@ RSpec.describe Sax2pats do
       let(:expected_patent_count) { 130 }
 
       include_context 'parsed patents'
+      include_context 'a parsed patent grant file'
 
       describe 'patent' do
         let(:expected_version) { '4.5' }
@@ -319,7 +424,7 @@ RSpec.describe Sax2pats do
           let(:patent_doc_number) { '09537659' }
           
           include_context 'a parsed patent'
-          it_behaves_like 'a patent'
+          it_behaves_like 'a patent grant'
           it_behaves_like 'a patent with abstract'
 
           context 'citation' do
@@ -396,7 +501,7 @@ RSpec.describe Sax2pats do
           let(:patent_doc_number) { '09537792' }
           
           include_context 'a parsed patent'
-          it_behaves_like 'a patent'
+          it_behaves_like 'a patent grant'
           it_behaves_like 'a patent with abstract'
 
           context 'applicant' do
@@ -474,7 +579,7 @@ RSpec.describe Sax2pats do
           let(:patent_doc_number) { '09537663' }
           
           include_context 'a parsed patent'
-          it_behaves_like 'a patent'
+          it_behaves_like 'a patent grant'
           it_behaves_like 'a patent with abstract'
 
           context 'National_classification' do
@@ -513,6 +618,7 @@ RSpec.describe Sax2pats do
       end
 
       include_context 'parsed patents'
+      include_context 'a parsed patent grant file'
       
       let(:patent_doc_number) { '09537659' }
           

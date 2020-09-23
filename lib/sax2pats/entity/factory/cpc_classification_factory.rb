@@ -12,7 +12,7 @@ class CPCClassificationFactory < EntityFactory
   end
 
   def entity_class
-    Sax2pats::CPCClassification
+    CPCClassification
   end
 
   def cpc_classification

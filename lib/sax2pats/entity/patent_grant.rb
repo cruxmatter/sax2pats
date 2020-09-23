@@ -1,0 +1,3 @@
+class PatentGrant < Patent
+
+end

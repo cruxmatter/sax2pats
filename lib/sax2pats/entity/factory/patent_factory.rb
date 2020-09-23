@@ -6,15 +6,11 @@ class PatentFactory < EntityFactory
   end
 
   def entity_class
-    Sax2pats::Patent
+    raise NotImplementedError
   end
 
   def patent
     @entity
-  end
-
-  def entity_version_adaptor_class(xml_version_adaptor_class)
-    xml_version_adaptor_class::PatentGrantVersion
   end
 
   def attribute_keys
@@ -34,10 +30,10 @@ class PatentFactory < EntityFactory
   end
 
   def assign_entities(entities_data_hash)
-    @entity.abstract = Sax2pats::PatentAbstract.new(
+    @entity.abstract = PatentAbstract.new(
       element: entities_data_hash.fetch('abstract')
     )
-    @entity.description = Sax2pats::PatentDescription.new(
+    @entity.description = PatentDescription.new(
       element: entities_data_hash.fetch('description')
     )
 

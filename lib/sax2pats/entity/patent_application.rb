@@ -1,0 +1,3 @@
+class PatentApplication < Patent
+
+end

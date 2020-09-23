@@ -1,62 +1,59 @@
 xml:
   patent_grant_tag: us-patent-grant
   patent_application_tag: us-patent-application
-patent_grant:
+patent_application:
   patent_type:
-    - us-bibliographic-data-grant
+    - us-bibliographic-data-application
     - application-reference
     - appl-type
   publication_reference:
-    - us-bibliographic-data-grant
+    - us-bibliographic-data-application
     - publication-reference
   application_reference:
-    - us-bibliographic-data-grant
+    - us-bibliographic-data-application
     - application-reference
   invention_title:
-    - us-bibliographic-data-grant
+    - us-bibliographic-data-application
     - invention-title
-  number_of_claims:
-    - us-bibliographic-data-grant
-    - number-of-claims
   inventors:
-    - us-bibliographic-data-grant
+    - us-bibliographic-data-application
     - us-parties
     - inventors
     - inventor
   assignees:
-    - us-bibliographic-data-grant
+    - us-bibliographic-data-application
     - assignees
     - assignee
   applicants:
-    - us-bibliographic-data-grant
+    - us-bibliographic-data-application
     - us-parties
     - us-applicants
     - us-applicant
   examiners:
-    - us-bibliographic-data-grant
+    - us-bibliographic-data-application
     - examiners
     - primary-examiner: primary-examiner
       assistant-examiner: assistant-examiner
   citations:
-    - us-bibliographic-data-grant
+    - us-bibliographic-data-application
     - us-references-cited
     - us-citation
   main_cpc:
-    - us-bibliographic-data-grant
+    - us-bibliographic-data-application
     - classifications-cpc
     - main-cpc
     - classification-cpc
   further_cpc:
-    - us-bibliographic-data-grant
+    - us-bibliographic-data-application
     - classifications-cpc
     - further-cpc
     - classification-cpc
   ipc_classifications:
-    - us-bibliographic-data-grant
+    - us-bibliographic-data-application
     - classifications-ipcr
     - classification-ipcr
   national_classifications:
-    - us-bibliographic-data-grant
+    - us-bibliographic-data-application
     - us-field-of-classification-search
     - classification-national
 patent:
