@@ -83,6 +83,14 @@ shared_examples 'a patent grant' do
   end
 end
 
+shared_examples 'a patent application' do
+  it_behaves_like 'a patent'
+
+  it 'series_code' do
+    expect(patent.series_code).to eq expected_series_code
+  end
+end
+
 shared_examples 'a patent with abstract' do
   it 'patent abstract doc' do
     expect(patent.abstract.as_doc).to eq expected_abstract_doc
@@ -278,11 +286,12 @@ RSpec.describe Sax2pats do
           let(:expected_ipc_classifications_size) { 6 }
           let(:expected_national_classifications_size) { 0 }
           let(:expected_patent_drawings_size) { 8 }
+          let(:expected_series_code) { 16 }
 
           let(:patent_doc_number) { '20200281107' }
 
           include_context 'a parsed patent'
-          it_behaves_like 'a patent'
+          it_behaves_like 'a patent application'
           it_behaves_like 'a patent with abstract'
 
           context 'applicant' do

@@ -28,7 +28,6 @@ class Patent
                 :invention_title,
                 :publication_reference,
                 :application_reference,
-                :number_of_claims,
                 :abstract,
                 :description,
                 :patent_type

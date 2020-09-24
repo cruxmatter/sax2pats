@@ -7,7 +7,7 @@ module Sax2pats
 
     def initialize(entity_hash)
       @entity_attribute_hash = entity_hash
-      self.class.version_mapper.keys.map do |attribute|
+      self.class.version_mapper.keys.each do |attribute|
         attrs_list = find_all_attribute_paths(self.class.version_mapper[attribute])
         @entity_attribute_hash[attribute] = if attrs_list.size > 1
           get_attributes_from_entity_hash(entity_hash, attrs_list)

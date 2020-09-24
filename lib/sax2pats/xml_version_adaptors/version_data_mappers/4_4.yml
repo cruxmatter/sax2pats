@@ -2,6 +2,9 @@ xml:
   patent_grant_tag: us-patent-grant
   patent_application_tag: us-patent-application
 patent_application:
+  series_code:
+    - us-bibliographic-data-application
+    - us-application-series-code
   patent_type:
     - us-bibliographic-data-application
     - application-reference
