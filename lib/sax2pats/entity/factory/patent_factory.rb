@@ -55,7 +55,6 @@ class PatentFactory < EntityFactory
         factory_class.new(
           @xml_version_adaptor
         )
-
       @entity.send(list) << factory.create(child_entity_hash)
     end
   end
