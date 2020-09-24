@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
 
   spec.summary       = %q{A Ruby SAX parser of USPTO patent XML}
   spec.description   = %q{A SAX parser of USPTO patent XML data using Ruby's Ox gem}
-  spec.homepage      = "https://github.com/doublestranded/sax2pats"
+  spec.homepage      = "https://github.com/cruxmatter/sax2pats"
   spec.license       = "MIT"
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
