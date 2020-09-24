@@ -1,6 +1,7 @@
+
 class ApplicantFactory < EntityFactory
   def entity_class
-    Sax2pats::Applicant
+    Applicant
   end
 
   def applicant

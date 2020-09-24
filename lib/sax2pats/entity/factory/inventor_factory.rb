@@ -1,6 +1,6 @@
 class InventorFactory < EntityFactory
   def entity_class
-    Sax2pats::Inventor
+    Inventor
   end
 
   def inventor

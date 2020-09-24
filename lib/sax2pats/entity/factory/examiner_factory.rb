@@ -1,6 +1,6 @@
 class ExaminerFactory < EntityFactory
   def entity_class
-    Sax2pats::Examiner
+    Examiner
   end
 
   def examiner

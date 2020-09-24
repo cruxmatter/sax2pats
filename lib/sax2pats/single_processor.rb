@@ -15,7 +15,7 @@ module Sax2pats
       return unless @xml_version_adaptor
 
       parser.for_tag(@xml_version_adaptor.patent_tag(:grant)).each do |patent_grant_hash|
-        patent_type = @xml_version_adaptor.patent_type(patent_grant_hash).to_sym
+        patent_type = @xml_version_adaptor.patent_type(:grant, patent_grant_hash).to_sym
         next unless @included_patent_types.include?(patent_type)
 
         custom_factories = {}
@@ -28,11 +28,32 @@ module Sax2pats
             )
         end
 
-        patent_factory = PatentFactory.new(
+        patent_factory = PatentGrantFactory.new(
           @xml_version_adaptor
         )
         patent_factory.custom_factories = custom_factories
         @patent_handler.call(patent_factory.create(patent_grant_hash))
+      end
+
+      parser.for_tag(@xml_version_adaptor.patent_tag(:application)).each do |patent_application_hash|
+        patent_type = @xml_version_adaptor.patent_type(:application, patent_application_hash).to_sym
+        next unless @included_patent_types.include?(patent_type)
+
+        custom_factories = {}
+
+        if @config.include_cpc_metadata?
+          custom_factories[:cpc_classifications] =
+            CPCClassificationFactory.new(
+              @xml_version_adaptor,
+              cpc_metadata: @config.cpc_metadata
+            )
+        end
+
+        patent_factory = PatentApplicationFactory.new(
+          @xml_version_adaptor
+        )
+        patent_factory.custom_factories = custom_factories    
+        @patent_handler.call(patent_factory.create(patent_application_hash))
       end
     end
 
@@ -54,6 +75,8 @@ module Sax2pats
       case v
       when 'v45'
         '4.5'
+      when 'v44'
+        '4.4'
       when 'v41'
         '4.1'
       end

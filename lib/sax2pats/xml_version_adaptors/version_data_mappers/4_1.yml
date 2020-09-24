@@ -1,7 +1,7 @@
 xml:
   patent_grant_tag: us-patent-grant
   patent_application_tag: us-patent-application
-patent:
+patent_grant:
   patent_type:
     - us-bibliographic-data-grant
     - application-reference
@@ -18,8 +18,6 @@ patent:
   number_of_claims:
     - us-bibliographic-data-grant
     - number-of-claims
-  abstract: abstract
-  description: description
   applicants:
     - us-bibliographic-data-grant
     - parties
@@ -39,12 +37,6 @@ patent:
     - examiners
     - primary-examiner: primary-examiner
       assistant-examiner: assistant-examiner
-  claims:
-    - claims
-    - claim
-  drawings:
-    - drawings
-    - figure
   citations:
     - us-bibliographic-data-grant
     - references-cited
@@ -67,6 +59,20 @@ patent:
     - us-bibliographic-data-grant
     - us-field-of-classification-search
     - classification-national
+patent_application:
+  patent_type:
+    - us-bibliographic-data-application
+    - application-reference
+    - appl-type
+patent:
+  abstract: abstract
+  description: description
+  claims:
+    - claims
+    - claim
+  drawings:
+    - drawings
+    - figure
 inventor:
   address:
     - addressbook

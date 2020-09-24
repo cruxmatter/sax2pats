@@ -1,6 +1,6 @@
 class DrawingFactory < EntityFactory
   def entity_class
-    Sax2pats::Drawing
+    Drawing
   end
 
   def drawing

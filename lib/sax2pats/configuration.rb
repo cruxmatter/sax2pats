@@ -8,7 +8,7 @@ class Configuration
 
   def initialize(
     included_patent_types: %i[utility design plant],
-    included_patent_states: ['us-patent-grant'],
+    included_patent_states: %w[us-patent-grant us-patent-application],
     cpc_metadata_config: {}
   )
     @included_patent_types = included_patent_types
@@ -65,6 +65,8 @@ class Configuration
     case version
     when '4.5'
       Sax2pats::XMLVersion4_5
+    when '4.4'
+      Sax2pats::XMLVersion4_4
     when '4.1'
       Sax2pats::XMLVersion4_1
     end

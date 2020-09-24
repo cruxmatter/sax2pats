@@ -40,7 +40,6 @@ class EntityFactory
   end
 
   def assign_attributes(attributes_data_hash)
-    # TODO types?
     attributes_data_hash
       .select { |k, _v| attribute_keys.include? k }
       .each { |k,v| @entity.public_send("#{k}=", coerce_type(k, v)) }

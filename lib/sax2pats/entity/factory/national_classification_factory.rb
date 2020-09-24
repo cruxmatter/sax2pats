@@ -1,6 +1,6 @@
 class NationalClassificationFactory < EntityFactory
   def entity_class
-    Sax2pats::NationalClassification
+    NationalClassification
   end
 
   def national_classification
