@@ -11,7 +11,7 @@ Benchmark.bm do |x|
       'spec',
       'test.xml'
     )
-    h = Sax2pats::SplitHandler.new(filename, patent_handler)
+    h = Sax2pats::SplitProcessor.new(filename, patent_handler)
     h.parse_patents
   end
 end
