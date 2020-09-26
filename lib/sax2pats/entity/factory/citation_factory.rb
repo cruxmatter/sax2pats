@@ -1,9 +1,9 @@
 class CitationFactory < EntityFactory
   def entity_class
     if @entity_data['patent_citation']
-      PatentCitation
+      Sax2pats::PatentCitation
     elsif @entity_data['other_citation']
-      OtherCitation
+      Sax2pats::OtherCitation
     else
       raise StandardError.new('Unknown citation type')
     end

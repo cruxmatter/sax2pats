@@ -1,6 +1,6 @@
 class IPCClassificationFactory < EntityFactory
   def entity_class
-    IPCClassification
+    Sax2pats::IPCClassification
   end
 
   def ipc_classification

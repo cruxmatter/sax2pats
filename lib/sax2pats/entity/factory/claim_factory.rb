@@ -1,6 +1,6 @@
 class ClaimFactory < EntityFactory
   def entity_class
-    Claim
+    Sax2pats::Claim
   end
 
   def claim

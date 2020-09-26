@@ -1,6 +1,6 @@
 class AssigneeFactory < EntityFactory
   def entity_class
-    Assignee
+    Sax2pats::Assignee
   end
 
   def assignee

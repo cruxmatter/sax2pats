@@ -1,6 +1,6 @@
 class PatentApplicationFactory < PatentFactory
   def entity_class
-    PatentApplication
+    Sax2pats::PatentApplication
   end
 
   def entity_version_adaptor_class(xml_version_adaptor_class)

@@ -30,10 +30,10 @@ class PatentFactory < EntityFactory
   end
 
   def assign_entities(entities_data_hash)
-    @entity.abstract = PatentAbstract.new(
+    @entity.abstract = Sax2pats::PatentAbstract.new(
       element: entities_data_hash.fetch('abstract')
     )
-    @entity.description = PatentDescription.new(
+    @entity.description = Sax2pats::PatentDescription.new(
       element: entities_data_hash.fetch('description')
     )
 

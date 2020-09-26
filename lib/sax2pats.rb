@@ -1,9 +1,5 @@
 require "sax2pats/version"
 
-module Sax2pats
-
-end
-
 require 'saxerator'
 require 'ox'
 require 'pry'
