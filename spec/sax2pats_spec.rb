@@ -181,7 +181,7 @@ shared_context 'parsed patents' do
       config.set_cpc_config(@cpc_metadata)
     end
     h.parse_patents
-    @patents
+    @patents # TODO: why is this here?
   end
 
   let(:patents) { @patents }

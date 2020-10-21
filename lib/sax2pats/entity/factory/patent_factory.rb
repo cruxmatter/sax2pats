@@ -29,7 +29,50 @@ class PatentFactory < EntityFactory
 
   def attribute_types
     {
-      'number_of_claims' => 'int'
+      number_of_claims: 'int'
+    }
+  end
+
+  def child_entity_types
+    {
+      abstract: { type: Sax2pats::PatentAbstract  },
+      description: { type: Sax2pats::PatentDescription },
+      inventors: {
+        type: 'array',
+        factory_class: InventorFactory,
+      },
+      assignees: {
+        type: 'array',
+        factory_class: AssigneeFactory,
+      },
+      applicants: {
+        type: 'array',
+        factory_class: ApplicantFactory,
+      },
+      claims: {
+        type: 'array',
+        factory_class: ClaimFactory,
+      },
+      examiners: {
+        type: 'array',
+        factory_class: ExaminerFactory,
+      },
+      drawings: {
+        type: 'array',
+        factory_class: DrawingFactory,
+      },
+      citations: {
+        type: 'array',
+        factory_class: CitationFactory,
+      },
+      ipc_classifications: {
+        type: 'array',
+        factory_class: IPCClassificationFactory,
+      },
+      national_classifications: {
+        type: 'array',
+        factory_class: NationalClassificationFactory,
+      },
     }
   end
 
@@ -41,17 +84,20 @@ class PatentFactory < EntityFactory
       element: entities_data_hash.fetch('description')
     )
 
-    default_entity_definitions.each do |child_definition_hash|
-      assign_children(**child_definition_hash.merge(data: entities_data_hash))
-    end
+    child_entity_types
+      .select { |key, entity_type| entity_type.fetch(:type) == 'array' }
+      .each do |key, entity_type|
+        assign_array_children(**{ key: key, factory_class: entity_type.fetch(:factory_class) }
+          .merge(data: entities_data_hash))
+      end
 
     assign_cpc_classifications(entities_data_hash)
   end
 
-  def assign_children(adapter_method:, key:, data:, list:, factory_class:)
+  def assign_array_children(key:, data:, factory_class:)
     @entity_version_adaptor
       .send(
-        adapter_method,
+        "enumerate_child_#{key.to_s}",
         data.fetch(key)
       ) do |child_entity_hash|
 
@@ -59,8 +105,7 @@ class PatentFactory < EntityFactory
         factory_class.new(
           @xml_version_adaptor
         )
-
-      @entity.send(list) << factory.create(child_entity_hash)
+      @entity.send(key) << factory.create(child_entity_hash)
     end
   end
 
@@ -77,66 +122,5 @@ class PatentFactory < EntityFactory
         @entity.classifications << cpc_factory.create(child_entity_hash, type)
       end
     end
-  end
-
-  private
-
-  def default_entity_definitions
-    [
-      {
-        key: 'inventors',
-        adapter_method: :enumerate_child_inventors,
-        list: :inventors,
-        factory_class: InventorFactory
-      },
-      {
-        key: 'assignees',
-        adapter_method: :enumerate_child_assignees,
-        list: :assignees,
-        factory_class: AssigneeFactory
-      },
-      {
-        key: 'examiners',
-        adapter_method: :enumerate_child_examiners,
-        list: :examiners,
-        factory_class: ExaminerFactory
-      },
-      {
-        key: 'applicants',
-        adapter_method: :enumerate_child_applicants,
-        list: :applicants,
-        factory_class: ApplicantFactory
-      },
-      {
-        key: 'claims',
-        adapter_method: :enumerate_child_claims,
-        list: :claims,
-        factory_class: ClaimFactory
-      },
-      {
-        key: 'drawings',
-        adapter_method: :enumerate_child_drawings,
-        list: :drawings,
-        factory_class: DrawingFactory
-      },
-      {
-        key: 'citations',
-        adapter_method: :enumerate_child_citations,
-        list: :citations,
-        factory_class: CitationFactory
-      },
-      {
-        key: 'ipc_classifications',
-        adapter_method: :enumerate_child_ipc_classifications,
-        list: :classifications,
-        factory_class: IPCClassificationFactory
-      },
-      {
-        key: 'national_classifications',
-        adapter_method: :enumerate_child_national_classifications,
-        list: :classifications,
-        factory_class: NationalClassificationFactory
-      }
-    ]
   end
 end

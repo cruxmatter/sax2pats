@@ -26,6 +26,9 @@ module Sax2pats
                   :drawings,
                   :tables,
                   :classifications,
+                  :ipc_classifications,
+                  :cpc_classifications,
+                  :national_classifications,
                   :invention_title,
                   :publication_reference,
                   :application_reference,
@@ -49,22 +52,10 @@ module Sax2pats
       @classifications = []
     end
 
-    def ipc_classifications
-      @classifications.select do |classification|
-        classification.class == Sax2pats::IPCClassification
-      end
-    end
-
-    def cpc_classifications
-      @classifications.select do |classification|
-        classification.class == Sax2pats::CPCClassification
-      end
-    end
-
-    def national_classifications
-      @classifications.select do |classification|
-        classification.class == Sax2pats::NationalClassification
-      end
+    def classifications
+      national_classifications +
+      ipc_classifications +
+      cpc_classifications
     end
   end
 end

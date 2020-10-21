@@ -103,14 +103,20 @@ applicant:
     - nationality
 assignee:
   first_name:
-    - addressbook
-    - first-name
+    addressbook:
+      - addressbook
+      - first-name
+    first-name: first-name
   last_name:
-    - addressbook
-    - last-name
+    addressbook:
+      - addressbook
+      - last-name
+    last-name: last-name
   orgname:
-    - addressbook
-    - orgname
+    addressbook:
+      - addressbook
+      - orgname
+    orgname: orgname
   role:
     - addressbook
     - role

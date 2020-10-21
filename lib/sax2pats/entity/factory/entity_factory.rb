@@ -30,6 +30,10 @@ class EntityFactory
     raise NotImplementedError
   end
 
+  def child_entity_types
+    {}
+  end
+
   def coerce_type(attr_key, attr_value)
     case attribute_types[attr_key]
     when 'int'
@@ -42,7 +46,6 @@ class EntityFactory
   end
 
   def assign_attributes(attributes_data_hash)
-    # TODO types?
     attributes_data_hash
       .select { |k, _v| attribute_keys.include? k }
       .each { |k,v| @entity.public_send("#{k}=", coerce_type(k, v)) }
