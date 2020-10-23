@@ -50,13 +50,13 @@ module Sax2pats
         end
         if [Saxerator::Builder::StringElement, String].include?(text_element.class)
           return open_tag +
-                 text_element.to_s +
-                 close_tag
+                text_element.to_s +
+                close_tag
         end
         if [Saxerator::Builder::ArrayElement, Array].include?(text_element.class)
           return open_tag +
-                 text_element.map{ |el| self.doc_body(el) }.join +
-                 close_tag
+                text_element.map{ |el| self.doc_body(el) }.join +
+                close_tag
         end
 
         open_tag + text_element.reject{|k,v| text_element.attributes.include?(k) }

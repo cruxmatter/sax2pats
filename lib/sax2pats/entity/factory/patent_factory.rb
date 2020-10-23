@@ -8,7 +8,7 @@ class PatentFactory < EntityFactory
   end
 
   def entity_class
-    Sax2pats::Patent
+    raise NotImplementedError
   end
 
   def patent

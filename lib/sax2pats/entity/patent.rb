@@ -1,6 +1,6 @@
 module Sax2pats
   class PatentAbstract
-    include Sax2pats::DocEntity
+    include DocEntity
 
     def initialize(element: nil)
       @element = element
@@ -8,7 +8,7 @@ module Sax2pats
   end
 
   class PatentDescription
-    include Sax2pats::DocEntity
+    include DocEntity
 
     def initialize(element: nil)
       @element = element
@@ -32,7 +32,6 @@ module Sax2pats
                   :invention_title,
                   :publication_reference,
                   :application_reference,
-                  :number_of_claims,
                   :abstract,
                   :description,
                   :patent_type
