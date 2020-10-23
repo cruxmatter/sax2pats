@@ -1,4 +1,6 @@
 class PatentFactory < EntityFactory
+  ENTITY_KEY = 'patent'.freeze
+  
   attr_accessor :custom_factories
 
   def custom_factories
@@ -11,10 +13,6 @@ class PatentFactory < EntityFactory
 
   def patent
     @entity
-  end
-
-  def entity_version_adaptor_class(xml_version_adaptor_class)
-    xml_version_adaptor_class::PatentGrantVersion
   end
 
   def attribute_keys
@@ -95,11 +93,7 @@ class PatentFactory < EntityFactory
   end
 
   def assign_array_children(key:, data:, factory_class:)
-    @entity_version_adaptor
-      .send(
-        "enumerate_child_#{key.to_s}",
-        data.fetch(key)
-      ) do |child_entity_hash|
+    @xml_version_adaptor.get_entity_data(ENTITY_KEY, key, data) do |child_entity_hash|
 
       factory =
         factory_class.new(
@@ -112,14 +106,12 @@ class PatentFactory < EntityFactory
   def assign_cpc_classifications(entities_data_hash)
     CPCClassificationFactory::TYPES.each do |type|
       @entity_version_adaptor
-        .enumerate_child_entities(
-          entities_data_hash.fetch(type)
-        ) do |child_entity_hash|
-        cpc_factory = custom_factories[:cpc_classifications] || CPCClassificationFactory.new(
-          @xml_version_adaptor
-        )
+        .get_entity_data(ENTITY_KEY, type, entities_data_hash) do |child_entity_hash|
+          cpc_factory = custom_factories[:cpc_classifications] || CPCClassificationFactory.new(
+            @xml_version_adaptor
+          )
 
-        @entity.classifications << cpc_factory.create(child_entity_hash, type)
+          @entity.classifications << cpc_factory.create(child_entity_hash, type)
       end
     end
   end

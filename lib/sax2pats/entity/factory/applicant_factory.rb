@@ -1,14 +1,12 @@
 class ApplicantFactory < EntityFactory
+  ENTITY_KEY = 'applicant'.freeze
+
   def entity_class
     Sax2pats::Applicant
   end
 
   def applicant
     @entity
-  end
-
-  def entity_version_adaptor_class(xml_version_adaptor_class)
-    xml_version_adaptor_class::ApplicantVersion
   end
 
   def attribute_keys

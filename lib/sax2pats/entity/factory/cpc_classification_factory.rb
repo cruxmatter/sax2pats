@@ -1,5 +1,6 @@
 class CPCClassificationFactory < EntityFactory
   TYPES = %w[main_cpc further_cpc].freeze
+  ENTITY_KEY = 'cpc_classification'.freeze
 
   def initialize(xml_version_adaptor, cpc_metadata: nil)
     @cpc_metadata = cpc_metadata
@@ -17,10 +18,6 @@ class CPCClassificationFactory < EntityFactory
 
   def cpc_classification
     @entity
-  end
-
-  def entity_version_adaptor_class(xml_version_adaptor_class)
-    xml_version_adaptor_class::CPCClassificationVersion
   end
 
   def attribute_keys

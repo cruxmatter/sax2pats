@@ -1,4 +1,6 @@
 class CitationFactory < EntityFactory
+  ENTITY_KEY = 'citation'.freeze
+
   def entity_class
     if @entity_data['patent_citation']
       Sax2pats::PatentCitation
@@ -11,10 +13,6 @@ class CitationFactory < EntityFactory
 
   def patent_citation
     @entity
-  end
-
-  def entity_version_adaptor_class(xml_version_adaptor_class)
-    xml_version_adaptor_class::CitationVersion
   end
 
   def attribute_keys

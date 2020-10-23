@@ -3,14 +3,14 @@ class EntityFactory
 
   def initialize(xml_version_adaptor)
     @xml_version_adaptor = xml_version_adaptor
-    @entity_version_adaptor_class = entity_version_adaptor_class(
-      @xml_version_adaptor.class
-    )
   end
 
   def create(data_hash)
-    @entity_version_adaptor = @entity_version_adaptor_class.new(data_hash)
-    @entity_data = @entity_version_adaptor.entity_attribute_hash
+    @entity_data = @xml_version_adaptor.get_entity_data(
+      nil,
+      self.class::ENTITY_KEY,
+      data_hash
+    )
 
     @entity = entity_class.new(@xml_version_adaptor.class::VERSION)
 

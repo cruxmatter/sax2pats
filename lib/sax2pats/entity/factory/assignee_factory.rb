@@ -1,14 +1,12 @@
 class AssigneeFactory < EntityFactory
+  ENTITY_KEY = 'assignee'.freeze
+
   def entity_class
     Sax2pats::Assignee
   end
 
   def assignee
     @entity
-  end
-
-  def entity_version_adaptor_class(xml_version_adaptor_class)
-    xml_version_adaptor_class::AssigneeVersion
   end
 
   def attribute_keys

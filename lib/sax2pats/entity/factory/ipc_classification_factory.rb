@@ -1,14 +1,12 @@
 class IPCClassificationFactory < EntityFactory
+  ENTITY_KEY = 'ipc_classification'.freeze
+
   def entity_class
     Sax2pats::IPCClassification
   end
 
   def ipc_classification
     @entity
-  end
-
-  def entity_version_adaptor_class(xml_version_adaptor_class)
-    xml_version_adaptor_class::IPCClassificationVersion
   end
 
   def attribute_keys

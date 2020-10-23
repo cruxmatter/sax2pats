@@ -3,11 +3,9 @@
 require 'spec_helper'
 
 describe 'XmlVersion' do
-  subject { Sax2pats::XMLVersion.new(nil, version_map_file) }
-  let(:test_file) { 'test_41.xml' }
-
-  context 'having version 4.1' do
-    let(:version_map_file) { '4_1.yml' }
+  describe 'XmlVersion4_5' do
+    let(:test_file) { 'test_41.xml' }
+    subject { Sax2pats::XMLVersion4_5.new }
 
     it 'loads version_mapper' do
       expected_keys = [
@@ -58,7 +56,21 @@ describe 'XmlVersion' do
             'date' => '20060103'
           }
         }
-        subject.get_entity_data('publication_reference', @patent_grant_hash).each do |k,v|
+        subject.get_attribute_data('publication_reference', @patent_grant_hash).each do |k,v|
+          expect(v).to eq expected_pub_ref[k]
+        end
+      end
+
+      it '#get_attribute_data' do
+        expected_pub_ref = {
+          'document-id' =>
+          { 'country' => 'US',
+            'doc-number' => 'D0513356',
+            'kind' => 'S1',
+            'date' => '20060103'
+          }
+        }
+        subject.get_attribute_data('publication_reference', @patent_grant_hash).each do |k,v|
           expect(v).to eq expected_pub_ref[k]
         end
       end
