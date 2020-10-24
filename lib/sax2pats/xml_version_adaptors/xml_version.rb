@@ -29,15 +29,28 @@ module Sax2pats
       end
     end
 
-    def patent_type(patent_hash)
-      patent_hash.dig(
-        *@version_mapper.dig('patent', 'patent_type')
-      )
+    def patent_type(state, patent_hash)
+      if state == :grant
+        patent_hash.dig(
+          *@version_mapper.dig('patent_grant', 'patent_type')
+        )
+      elsif state == :application
+        patent_hash.dig(
+          *@version_mapper.dig('patent_application', 'patent_type')
+        )
+      end
     end
 
     def get_entity_data(parent_key, entity_key, data_hash)
       return data_hash unless parent_key
-      data_hash.dig(*version_mapper.dig(parent_key, entity_key))
+
+      key_path = version_mapper.dig(parent_key.to_s, entity_key.to_s)
+
+      binding.pry if entity_key == :citations
+      
+      if key_path
+        data_hash.dig(*version_mapper.dig(parent_key.to_s, entity_key.to_s))
+      end
     end 
 
     def get_attribute_data(attribute_key, data_hash)

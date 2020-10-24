@@ -76,10 +76,10 @@ class PatentFactory < EntityFactory
 
   def assign_entities(entities_data_hash)
     @entity.abstract = Sax2pats::PatentAbstract.new(
-      element: entities_data_hash.fetch('abstract')
+      element: @xml_version_adaptor.get_attribute_data('abstract', entities_data_hash)
     )
     @entity.description = Sax2pats::PatentDescription.new(
-      element: entities_data_hash.fetch('description')
+      element: @xml_version_adaptor.get_attribute_data('description', entities_data_hash)
     )
 
     child_entity_types
@@ -93,20 +93,26 @@ class PatentFactory < EntityFactory
   end
 
   def assign_array_children(key:, data:, factory_class:)
-    @xml_version_adaptor.get_entity_data(ENTITY_KEY, key, data) do |child_entity_hash|
-
-      factory =
+    factory =
         factory_class.new(
           @xml_version_adaptor
         )
-      @entity.send(key) << factory.create(child_entity_hash)
+
+    child_or_children = @xml_version_adaptor.get_entity_data(self.class::ENTITY_KEY, key, data)
+    
+    if Sax2pats::Utility.is_array? child_or_children
+      child_or_children.each do |child_entity_hash|
+        @entity.send(key) << factory.create(child_entity_hash)
+      end
+    elsif Sax2pats::Utility.is_hash? child_or_children
+      @entity.send(key) << factory.create(child_or_children)
     end
   end
 
   def assign_cpc_classifications(entities_data_hash)
     CPCClassificationFactory::TYPES.each do |type|
-      @entity_version_adaptor
-        .get_entity_data(ENTITY_KEY, type, entities_data_hash) do |child_entity_hash|
+      @xml_version_adaptor
+        .get_entity_data(self.class::ENTITY_KEY, type, entities_data_hash) do |child_entity_hash|
           cpc_factory = custom_factories[:cpc_classifications] || CPCClassificationFactory.new(
             @xml_version_adaptor
           )

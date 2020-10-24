@@ -6,11 +6,7 @@ class EntityFactory
   end
 
   def create(data_hash)
-    @entity_data = @xml_version_adaptor.get_entity_data(
-      nil,
-      self.class::ENTITY_KEY,
-      data_hash
-    )
+    set_entity_data(data_hash)
 
     @entity = entity_class.new(@xml_version_adaptor.class::VERSION)
 
@@ -21,6 +17,18 @@ class EntityFactory
   end
 
   protected
+
+  def set_entity_data(data_hash)
+    self.class.ancestors.each do |klass|
+      @entity_data = @xml_version_adaptor.get_entity_data(
+        nil,
+        klass::ENTITY_KEY,
+        data_hash
+      )
+      break if @entity_data
+      break if klass = EntityFactory
+    end
+  end
 
   def attribute_types
     {}
@@ -45,17 +53,14 @@ class EntityFactory
     end
   end
 
-  def assign_attributes(attributes_data_hash)
-    attributes_data_hash
-      .select { |k, _v| attribute_keys.include? k }
-      .each { |k,v| @entity.public_send("#{k}=", coerce_type(k, v)) }
+  def assign_attributes(data_hash)
+    attribute_keys.each do |key|
+      attr_value = @xml_version_adaptor.get_attribute_data(key, data_hash)
+      @entity.public_send("#{key}=", coerce_type(key, attr_value))
+    end
   end
 
-  def assign_entities(entities_data_hash); end
-
-  def entity_version_adaptor_class(_xml_version_adaptor_class)
-    raise NotImplementedError
-  end
+  def assign_entities(data_hash); end
 
   def entity_class
     raise NotImplementedError

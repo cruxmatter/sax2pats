@@ -48,7 +48,9 @@ module Sax2pats
       @citations = []
       @claims = []
       @drawings = []
-      @classifications = []
+      @national_classifications = []
+      @ipc_classifications = []
+      @cpc_classifications = []
     end
 
     def classifications
