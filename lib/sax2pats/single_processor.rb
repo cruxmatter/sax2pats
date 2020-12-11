@@ -52,7 +52,7 @@ module Sax2pats
         patent_factory = PatentApplicationFactory.new(
           @xml_version_adaptor
         )
-        patent_factory.custom_factories = custom_factories    
+        patent_factory.custom_factories = custom_factories
         @patent_handler.call(patent_factory.create(patent_application_hash))
       end
     end

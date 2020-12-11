@@ -6,28 +6,34 @@ class EntityFactory
   end
 
   def create(data_hash)
-    set_entity_data(data_hash)
-
     @entity = entity_class.new(@xml_version_adaptor.class::VERSION)
 
-    assign_attributes(@entity_data)
-    assign_entities(@entity_data)
+    entity_data = get_entity_data(data_hash)
+
+    assign_attributes(entity_data)
+    assign_child_entities(entity_data)
 
     @entity
   end
 
   protected
 
-  def set_entity_data(data_hash)
+  def get_entity_data(data_hash)
+    # Merge data from base classes (e.g. Patent for PatentGrant), 
+    # but the result must be a Saxerator hash
+    entity_data = nil
     self.class.ancestors.each do |klass|
-      @entity_data = @xml_version_adaptor.get_entity_data(
+      break if klass == EntityFactory
+      data = @xml_version_adaptor.transform_entity_data(
         nil,
         klass::ENTITY_KEY,
         data_hash
       )
-      break if @entity_data
-      break if klass = EntityFactory
+      entity_data = entity_data ? entity_data.merge!(data) : data
+      entity_data.merge!(data)
     end
+    # TODO: raise error if data empty
+    entity_data
   end
 
   def attribute_types
@@ -52,15 +58,23 @@ class EntityFactory
       attr_value
     end
   end
+  
+  def find_attribute(attribute_key, data_hash)
+    self.class.ancestors
+      .take_while { |klass| klass != EntityFactory }
+      .map { |klass| @xml_version_adaptor.transform_attribute_data(klass::ENTITY_KEY, attribute_key, data_hash) }
+      .detect { |attr_value| attr_value }
+  end
 
   def assign_attributes(data_hash)
-    attribute_keys.each do |key|
-      attr_value = @xml_version_adaptor.get_attribute_data(key, data_hash)
-      @entity.public_send("#{key}=", coerce_type(key, attr_value))
+    attribute_keys.each do |attribute_key|
+      attr_value = find_attribute(attribute_key, data_hash)
+      next unless attr_value
+      @entity.public_send("#{attribute_key}=", coerce_type(attribute_key, attr_value))
     end
   end
 
-  def assign_entities(data_hash); end
+  def assign_child_entities(data_hash); end
 
   def entity_class
     raise NotImplementedError

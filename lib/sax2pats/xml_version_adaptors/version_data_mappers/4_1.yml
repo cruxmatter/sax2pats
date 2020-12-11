@@ -37,10 +37,16 @@ patent_grant:
     - examiners
     - primary-examiner: primary-examiner
       assistant-examiner: assistant-examiner
-  citations:
+  patent_citations:
     - us-bibliographic-data-grant
     - references-cited
     - citation
+    - patcit
+  other_citations:
+    - us-bibliographic-data-grant
+    - references-cited
+    - citation
+    - nplcit
   main_cpc:
     - us-bibliographic-data-grant
     - classifications-cpc
@@ -125,9 +131,7 @@ claim:
   claim_id: id
 drawing:
   id: id
-citation:
-  patent_citation: patcit
-  other_citation: nplcit
+patent_citation:
   category: category
   document_id:
     - patcit
@@ -135,6 +139,9 @@ citation:
   classification_cpc_text: classification-cpc-text
   classification_national: classification-national
   us_field_of_classification_search: us-field-of-classification-search
+other_citation:
+  citation_value:
+    - othercit
 cpc_classification:
   version_date:
     - cpc-version-indicator

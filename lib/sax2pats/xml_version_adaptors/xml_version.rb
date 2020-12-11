@@ -41,26 +41,33 @@ module Sax2pats
       end
     end
 
-    def get_entity_data(parent_key, entity_key, data_hash)
+    def transform_entity_data(parent_key, entity_key, data_hash)
       return data_hash unless parent_key
 
       key_path = version_mapper.dig(parent_key.to_s, entity_key.to_s)
-
-      binding.pry if entity_key == :citations
       
       if key_path
-        data_hash.dig(*version_mapper.dig(parent_key.to_s, entity_key.to_s))
+        transform_attribute_data(parent_key.to_s, entity_key.to_s, data_hash)
       end
     end 
 
-    def get_attribute_data(attribute_key, data_hash)
-      attrs = 
-        @attribute_paths.fetch(attribute_key)
-          .map { |path| data_hash.dig(*path) }
-          .compact
+    def transform_attribute_data(entity_key, attribute_key, data_hash)
+      paths = @attribute_paths.dig(entity_key, attribute_key)
+      return if paths.to_a.empty?
+      attrs = paths.map { |path| data_hash.dig(*path) }.compact
       return nil if attrs.empty?
       return attrs.first if attrs.size == 1
       attrs
+    end
+
+    def filter_entity_data(parent_key, entity_key, data)
+      return data unless @filter_keys[parent_key.to_s][entity_key.to_s]
+
+      if Sax2pats::Utility.is_array?(data)
+        data.select { |item| item.keys.include? @filter_keys[parent_key.to_s][entity_key.to_s] }
+      elsif (Sax2pats::Utility.is_hash?(data) && data.keys.include?(@filter_keys[parent_key.to_s][entity_key.to_s]))
+        data
+      end
     end
 
     def find_all_attribute_paths(lookup_path, paths=[], current_path=[])
@@ -86,9 +93,22 @@ module Sax2pats
 
     def compute_attribute_paths
       @attribute_paths = {}
+      @filter_keys = {}
       @version_mapper.each do |entity_key, attribute_keys|
+        @attribute_paths[entity_key] ||= {}
+        @filter_keys[entity_key] ||= {}
         attribute_keys.each do |k,v|
-          @attribute_paths[k] = find_all_attribute_paths(v)
+          paths = find_all_attribute_paths(v)
+          @attribute_paths[entity_key][k] = paths
+
+          paths.each do |path|
+            if path.last.starts_with? '~'
+              # Only support 1 filter key
+              @filter_keys[entity_key][k] = path.pop[1..-1]
+            end
+          end
+
+          @attribute_paths[entity_key][k] = paths
         end
       end
     end

@@ -22,7 +22,6 @@ class CPCClassificationFactory < EntityFactory
 
   def attribute_keys
     %w[
-      type
       version_date
       section
       cclass

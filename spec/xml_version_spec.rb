@@ -56,12 +56,12 @@ describe 'XmlVersion' do
             'date' => '20060103'
           }
         }
-        subject.get_attribute_data('publication_reference', @patent_grant_hash).each do |k,v|
+        subject.transform_attribute_data('publication_reference', @patent_grant_hash).each do |k,v|
           expect(v).to eq expected_pub_ref[k]
         end
       end
 
-      it '#get_attribute_data' do
+      it '#transform_attribute_data' do
         expected_pub_ref = {
           'document-id' =>
           { 'country' => 'US',
@@ -70,7 +70,7 @@ describe 'XmlVersion' do
             'date' => '20060103'
           }
         }
-        subject.get_attribute_data('publication_reference', @patent_grant_hash).each do |k,v|
+        subject.transform_attribute_data('patent_grant', 'publication_reference', @patent_grant_hash).each do |k,v|
           expect(v).to eq expected_pub_ref[k]
         end
       end

@@ -16,6 +16,7 @@ class PatentFactory < EntityFactory
   end
 
   def attribute_keys
+    # TODO move to constant
     [
       'invention_title',
       'publication_reference',
@@ -27,7 +28,7 @@ class PatentFactory < EntityFactory
 
   def attribute_types
     {
-      number_of_claims: 'int'
+      'number_of_claims' => 'int'
     }
   end
 
@@ -59,9 +60,13 @@ class PatentFactory < EntityFactory
         type: 'array',
         factory_class: DrawingFactory,
       },
-      citations: {
+      patent_citations: {
         type: 'array',
-        factory_class: CitationFactory,
+        factory_class: PatentCitationFactory,
+      },
+      other_citations: {
+        type: 'array',
+        factory_class: OtherCitationFactory,
       },
       ipc_classifications: {
         type: 'array',
@@ -74,12 +79,12 @@ class PatentFactory < EntityFactory
     }
   end
 
-  def assign_entities(entities_data_hash)
+  def assign_child_entities(entities_data_hash)
     @entity.abstract = Sax2pats::PatentAbstract.new(
-      element: @xml_version_adaptor.get_attribute_data('abstract', entities_data_hash)
+      element: find_attribute('abstract', entities_data_hash)
     )
     @entity.description = Sax2pats::PatentDescription.new(
-      element: @xml_version_adaptor.get_attribute_data('description', entities_data_hash)
+      element: find_attribute('description', entities_data_hash)
     )
 
     child_entity_types
@@ -98,7 +103,24 @@ class PatentFactory < EntityFactory
           @xml_version_adaptor
         )
 
-    child_or_children = @xml_version_adaptor.get_entity_data(self.class::ENTITY_KEY, key, data)
+    # TODO: refactor
+    child_or_children = nil
+
+    self.class.ancestors.each do |klass|
+      break if klass == EntityFactory
+      entity_data = @xml_version_adaptor.transform_entity_data(
+        klass::ENTITY_KEY,
+        key,
+        data
+      )
+      child_or_children = entity_data if entity_data
+    end
+
+    child_or_children = @xml_version_adaptor.filter_entity_data(
+      self.class::ENTITY_KEY,
+      key,
+      child_or_children
+    )
     
     if Sax2pats::Utility.is_array? child_or_children
       child_or_children.each do |child_entity_hash|
@@ -111,13 +133,35 @@ class PatentFactory < EntityFactory
 
   def assign_cpc_classifications(entities_data_hash)
     CPCClassificationFactory::TYPES.each do |type|
-      @xml_version_adaptor
-        .get_entity_data(self.class::ENTITY_KEY, type, entities_data_hash) do |child_entity_hash|
+
+      # TODO: refactor
+      child_entity_hash = nil
+
+      self.class.ancestors.each do |klass|
+        break if klass == EntityFactory
+        child_entity_hash = @xml_version_adaptor.transform_entity_data(
+          klass::ENTITY_KEY,
+          type,
+          entities_data_hash
+        )
+
+        next unless child_entity_hash
+
+        if Sax2pats::Utility.is_array?(child_entity_hash)
+          child_entity_hash.each do |e|
+              cpc_factory = custom_factories[:cpc_classifications] || CPCClassificationFactory.new(
+                @xml_version_adaptor
+              )
+
+              @entity.cpc_classifications << cpc_factory.create(e, type)
+          end
+        elsif Sax2pats::Utility.is_hash?(child_entity_hash)
           cpc_factory = custom_factories[:cpc_classifications] || CPCClassificationFactory.new(
             @xml_version_adaptor
           )
 
-          @entity.classifications << cpc_factory.create(child_entity_hash, type)
+          @entity.cpc_classifications << cpc_factory.create(child_entity_hash, type)
+        end
       end
     end
   end

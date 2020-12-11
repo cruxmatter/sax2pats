@@ -21,11 +21,11 @@ module Sax2pats
                   :assignees,
                   :examiners,
                   :applicants,
-                  :citations,
+                  :patent_citations,
+                  :other_citations,
                   :claims,
                   :drawings,
                   :tables,
-                  :classifications,
                   :ipc_classifications,
                   :cpc_classifications,
                   :national_classifications,
@@ -45,12 +45,17 @@ module Sax2pats
       @assignees = []
       @examiners = []
       @applicants = []
-      @citations = []
+      @patent_citations = []
+      @other_citations = []
       @claims = []
       @drawings = []
       @national_classifications = []
       @ipc_classifications = []
       @cpc_classifications = []
+    end
+
+    def citations
+      @patent_citations + @other_citations
     end
 
     def classifications
