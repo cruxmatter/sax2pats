@@ -4,14 +4,13 @@ require 'spec_helper'
 
 describe 'XmlVersion' do
   describe 'XmlVersion4_5' do
-    let(:test_file) { 'test_41.xml' }
+    let(:test_file) { 'test_45.xml' }
     subject { Sax2pats::XMLVersion4_5.new }
 
     it 'loads version_mapper' do
       expected_keys = [
         'applicant',
         'assignee',
-        'citation',
         'claim',
         'cpc_classification',
         'drawing',
@@ -20,14 +19,17 @@ describe 'XmlVersion' do
         'ipc_classification',
         'national_classification',
         'patent', 
-        'xml'
+        'xml',
+        'other_citation',
+        'patent_citation',
+        'patent_grant'
       ]
       expect(subject.version_mapper.keys).to match_array(expected_keys)
-      expect(subject.version_mapper.fetch('patent').fetch('inventors')).to eq [
+      expect(subject.version_mapper.fetch('patent_grant').fetch('inventors')).to eq [
         'us-bibliographic-data-grant',
-        'parties',
-        'applicants',
-        'applicant'
+        'us-parties',
+        'inventors',
+        'inventor'
       ]
     end
 
@@ -51,12 +53,12 @@ describe 'XmlVersion' do
         expected_pub_ref = {
           'document-id' =>
           { 'country' => 'US',
-            'doc-number' => 'D0513356',
-            'kind' => 'S1',
-            'date' => '20060103'
+            'doc-number' => '09537659',
+            'kind' => 'B2',
+            'date' => '20170103'
           }
         }
-        subject.transform_attribute_data('publication_reference', @patent_grant_hash).each do |k,v|
+        subject.transform_attribute_data('patent_grant', 'publication_reference', @patent_grant_hash).each do |k,v|
           expect(v).to eq expected_pub_ref[k]
         end
       end
@@ -65,9 +67,9 @@ describe 'XmlVersion' do
         expected_pub_ref = {
           'document-id' =>
           { 'country' => 'US',
-            'doc-number' => 'D0513356',
-            'kind' => 'S1',
-            'date' => '20060103'
+            'doc-number' => '09537659',
+            'kind' => 'B2',
+            'date' => '20170103'
           }
         }
         subject.transform_attribute_data('patent_grant', 'publication_reference', @patent_grant_hash).each do |k,v|

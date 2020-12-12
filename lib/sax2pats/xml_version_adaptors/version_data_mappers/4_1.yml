@@ -41,12 +41,12 @@ patent_grant:
     - us-bibliographic-data-grant
     - references-cited
     - citation
-    - patcit
+    - ~patcit
   other_citations:
     - us-bibliographic-data-grant
     - references-cited
     - citation
-    - nplcit
+    - ~nplcit
   main_cpc:
     - us-bibliographic-data-grant
     - classifications-cpc
