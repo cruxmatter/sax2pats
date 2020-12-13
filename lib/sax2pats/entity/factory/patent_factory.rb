@@ -103,8 +103,7 @@ class PatentFactory < EntityFactory
           @xml_version_adaptor
         )
 
-    # TODO: refactor
-    child_or_children = nil
+    child_or_children = []
 
     self.class.ancestors.each do |klass|
       break if klass == EntityFactory
