@@ -110,11 +110,15 @@ assignee:
     - addressbook
     - last-name
   orgname:
-    - addressbook
-    - orgname
+    addressbook:
+      - addressbook
+      - orgname
+    orgname: orgname
   role:
-    - addressbook
-    - role
+    addressbook:
+      - addressbook
+      - role
+    role: role
   address:
     - addressbook
     - address

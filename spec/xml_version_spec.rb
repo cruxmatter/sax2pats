@@ -3,6 +3,22 @@
 require 'spec_helper'
 
 describe 'XmlVersion' do
+  describe 'XmlVersion4_4' do
+    let(:test_file) { 'test_44.xml' }
+    subject { Sax2pats::XMLVersion4_4.new }
+
+    describe '#find_all_attribute_paths' do
+      it 'collects all nested paths' do
+        version_mapper_attr = {
+          "addressbook" => ["addressbook", "orgname"],
+          "orgname" => "orgname"
+        }
+        expected_array = [["addressbook", "orgname"], ["orgname"]]
+        expect(Sax2pats::XMLVersion4_4.find_all_attribute_paths(version_mapper_attr)).to match_array(expected_array)
+      end
+    end
+  end
+
   describe 'XmlVersion4_5' do
     let(:test_file) { 'test_45.xml' }
     subject { Sax2pats::XMLVersion4_5.new }

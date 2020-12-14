@@ -70,7 +70,7 @@ module Sax2pats
       end
     end
 
-    def find_all_attribute_paths(lookup_path, paths=[], current_path=[])
+    def self.find_all_attribute_paths(lookup_path, paths=[], current_path=[])
       if lookup_path.is_a? String
         if current_path.empty?
           paths << current_path
@@ -83,7 +83,6 @@ module Sax2pats
         lookup_path.each do |k,v|
           find_all_attribute_paths(v, paths, current_path)
           current_path = dup
-          paths << current_path
         end
       end
       paths
@@ -98,7 +97,7 @@ module Sax2pats
         @attribute_paths[entity_key] ||= {}
         @filter_keys[entity_key] ||= {}
         attribute_keys.each do |k,v|
-          paths = find_all_attribute_paths(v)
+          paths = self.class.find_all_attribute_paths(v)
           @attribute_paths[entity_key][k] = paths
 
           paths.each do |path|
