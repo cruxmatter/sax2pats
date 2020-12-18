@@ -197,7 +197,7 @@ shared_context 'parsed patents' do
       config.set_cpc_config(@cpc_metadata)
     end
     h.parse_patents
-    @patents
+    @patents # TODO: why is this here?
   end
 
   let(:patents) { @patents }
@@ -305,8 +305,7 @@ RSpec.describe Sax2pats do
           context 'assignee' do
             let(:assignee) { patent.assignees.first }
             let(:expected_assignee_last_name) { nil }
-            # should be 'CNH Industrial America LLC', but patent doc is wrong?
-            let(:expected_assignee_orgname) { nil }
+            let(:expected_assignee_orgname) { 'CNH Industrial America LLC' }
 
             it_behaves_like 'an assignee'
           end

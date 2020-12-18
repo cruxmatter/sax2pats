@@ -1,14 +1,12 @@
 class DrawingFactory < EntityFactory
+  ENTITY_KEY = 'drawing'.freeze
+
   def entity_class
     Sax2pats::Drawing
   end
 
   def drawing
     @entity
-  end
-
-  def entity_version_adaptor_class(xml_version_adaptor_class)
-    xml_version_adaptor_class::DrawingVersion
   end
 
   def attribute_keys

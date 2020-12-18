@@ -1,8 +1,6 @@
 module Sax2pats
-  class XMLVersion4_4
+  class XMLVersion4_4 < Sax2pats::XMLVersion
     VERSION = '4.4'.freeze
-    DATA_MAPPER_FILE = '4_4.yml'.freeze
-
-    include Sax2pats::XMLVersion
+    VERSION_MAP_FILE = '4_4.yml'.freeze
   end
 end

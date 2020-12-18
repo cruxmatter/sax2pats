@@ -1,4 +1,6 @@
 class PatentFactory < EntityFactory
+  ENTITY_KEY = 'patent'.freeze
+  
   attr_accessor :custom_factories
 
   def custom_factories
@@ -14,6 +16,7 @@ class PatentFactory < EntityFactory
   end
 
   def attribute_keys
+    # TODO move to constant
     [
       'invention_title',
       'publication_reference',
@@ -29,109 +32,136 @@ class PatentFactory < EntityFactory
     }
   end
 
-  def assign_entities(entities_data_hash)
+  def child_entity_types
+    {
+      abstract: { type: Sax2pats::PatentAbstract  },
+      description: { type: Sax2pats::PatentDescription },
+      inventors: {
+        type: 'array',
+        factory_class: InventorFactory,
+      },
+      assignees: {
+        type: 'array',
+        factory_class: AssigneeFactory,
+      },
+      applicants: {
+        type: 'array',
+        factory_class: ApplicantFactory,
+      },
+      claims: {
+        type: 'array',
+        factory_class: ClaimFactory,
+      },
+      examiners: {
+        type: 'array',
+        factory_class: ExaminerFactory,
+      },
+      drawings: {
+        type: 'array',
+        factory_class: DrawingFactory,
+      },
+      patent_citations: {
+        type: 'array',
+        factory_class: PatentCitationFactory,
+      },
+      other_citations: {
+        type: 'array',
+        factory_class: OtherCitationFactory,
+      },
+      ipc_classifications: {
+        type: 'array',
+        factory_class: IPCClassificationFactory,
+      },
+      national_classifications: {
+        type: 'array',
+        factory_class: NationalClassificationFactory,
+      },
+    }
+  end
+
+  def assign_child_entities(entities_data_hash)
     @entity.abstract = Sax2pats::PatentAbstract.new(
-      element: entities_data_hash.fetch('abstract')
+      element: find_attribute('abstract', entities_data_hash)
     )
     @entity.description = Sax2pats::PatentDescription.new(
-      element: entities_data_hash.fetch('description')
+      element: find_attribute('description', entities_data_hash)
     )
 
-    default_entity_definitions.each do |child_definition_hash|
-      assign_children(**child_definition_hash.merge(data: entities_data_hash))
-    end
+    child_entity_types
+      .select { |key, entity_type| entity_type.fetch(:type) == 'array' }
+      .each do |key, entity_type|
+        assign_array_children(**{ key: key, factory_class: entity_type.fetch(:factory_class) }
+          .merge(data: entities_data_hash))
+      end
 
     assign_cpc_classifications(entities_data_hash)
   end
 
-  def assign_children(adapter_method:, key:, data:, list:, factory_class:)
-    @entity_version_adaptor
-      .send(
-        adapter_method,
-        data.fetch(key)
-      ) do |child_entity_hash|
-
-      factory =
+  def assign_array_children(key:, data:, factory_class:)
+    factory =
         factory_class.new(
           @xml_version_adaptor
         )
-      @entity.send(list) << factory.create(child_entity_hash)
+
+    child_or_children = []
+
+    self.class.ancestors.each do |klass|
+      break if klass == EntityFactory
+      entity_data = @xml_version_adaptor.transform_entity_data(
+        klass::ENTITY_KEY,
+        key,
+        data
+      )
+      child_or_children = entity_data if entity_data
+    end
+
+    child_or_children = @xml_version_adaptor.filter_entity_data(
+      self.class::ENTITY_KEY,
+      key,
+      child_or_children
+    )
+    
+    if Sax2pats::Utility.is_array? child_or_children
+      child_or_children.each do |child_entity_hash|
+        @entity.send(key) << factory.create(child_entity_hash)
+      end
+    elsif Sax2pats::Utility.is_hash? child_or_children
+      @entity.send(key) << factory.create(child_or_children)
     end
   end
 
   def assign_cpc_classifications(entities_data_hash)
     CPCClassificationFactory::TYPES.each do |type|
-      @entity_version_adaptor
-        .enumerate_child_entities(
-          entities_data_hash.fetch(type)
-        ) do |child_entity_hash|
-        cpc_factory = custom_factories[:cpc_classifications] || CPCClassificationFactory.new(
-          @xml_version_adaptor
+
+      # TODO: refactor
+      child_entity_hash = nil
+
+      self.class.ancestors.each do |klass|
+        break if klass == EntityFactory
+        child_entity_hash = @xml_version_adaptor.transform_entity_data(
+          klass::ENTITY_KEY,
+          type,
+          entities_data_hash
         )
 
-        @entity.classifications << cpc_factory.create(child_entity_hash, type)
+        next unless child_entity_hash
+
+        if Sax2pats::Utility.is_array?(child_entity_hash)
+          child_entity_hash.each do |e|
+              cpc_factory = custom_factories[:cpc_classifications] || CPCClassificationFactory.new(
+                @xml_version_adaptor
+              )
+
+              @entity.cpc_classifications << cpc_factory.create(e, type)
+          end
+        elsif Sax2pats::Utility.is_hash?(child_entity_hash)
+          cpc_factory = custom_factories[:cpc_classifications] || CPCClassificationFactory.new(
+            @xml_version_adaptor
+          )
+
+          @entity.cpc_classifications << cpc_factory.create(child_entity_hash, type)
+        end
       end
     end
-  end
-
-  private
-
-  def default_entity_definitions
-    [
-      {
-        key: 'inventors',
-        adapter_method: :enumerate_child_inventors,
-        list: :inventors,
-        factory_class: InventorFactory
-      },
-      {
-        key: 'assignees',
-        adapter_method: :enumerate_child_assignees,
-        list: :assignees,
-        factory_class: AssigneeFactory
-      },
-      {
-        key: 'examiners',
-        adapter_method: :enumerate_child_examiners,
-        list: :examiners,
-        factory_class: ExaminerFactory
-      },
-      {
-        key: 'applicants',
-        adapter_method: :enumerate_child_applicants,
-        list: :applicants,
-        factory_class: ApplicantFactory
-      },
-      {
-        key: 'claims',
-        adapter_method: :enumerate_child_claims,
-        list: :claims,
-        factory_class: ClaimFactory
-      },
-      {
-        key: 'drawings',
-        adapter_method: :enumerate_child_drawings,
-        list: :drawings,
-        factory_class: DrawingFactory
-      },
-      {
-        key: 'citations',
-        adapter_method: :enumerate_child_citations,
-        list: :citations,
-        factory_class: CitationFactory
-      },
-      {
-        key: 'ipc_classifications',
-        adapter_method: :enumerate_child_ipc_classifications,
-        list: :classifications,
-        factory_class: IPCClassificationFactory
-      },
-      {
-        key: 'national_classifications',
-        adapter_method: :enumerate_child_national_classifications,
-        list: :classifications,
-        factory_class: NationalClassificationFactory
-      }
-    ]
   end
 end

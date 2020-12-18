@@ -1,14 +1,12 @@
 class ClaimFactory < EntityFactory
+  ENTITY_KEY = 'claim'.freeze
+
   def entity_class
     Sax2pats::Claim
   end
 
   def claim
     @entity
-  end
-
-  def entity_version_adaptor_class(xml_version_adaptor_class)
-    xml_version_adaptor_class::ClaimVersion
   end
 
   def attribute_keys

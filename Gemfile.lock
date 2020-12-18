@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    sax2pats (0.1.2)
+    sax2pats (0.2.0)
       activesupport
       ox
       redis

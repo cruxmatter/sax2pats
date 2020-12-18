@@ -1,14 +1,12 @@
 class NationalClassificationFactory < EntityFactory
+  ENTITY_KEY = 'national_classification'.freeze
+
   def entity_class
     Sax2pats::NationalClassification
   end
 
   def national_classification
     @entity
-  end
-
-  def entity_version_adaptor_class(xml_version_adaptor_class)
-    xml_version_adaptor_class::NationalClassificationVersion
   end
 
   def attribute_keys

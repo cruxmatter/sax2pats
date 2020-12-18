@@ -1,10 +1,8 @@
 class PatentApplicationFactory < PatentFactory
+  ENTITY_KEY = 'patent_application'.freeze
+
   def entity_class
     Sax2pats::PatentApplication
-  end
-
-  def entity_version_adaptor_class(xml_version_adaptor_class)
-    xml_version_adaptor_class::PatentApplicationVersion
   end
 
   def attribute_keys

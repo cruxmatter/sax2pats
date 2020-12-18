@@ -1,14 +1,12 @@
 class ExaminerFactory < EntityFactory
+  ENTITY_KEY = 'examiner'.freeze
+
   def entity_class
     Sax2pats::Examiner
   end
 
   def examiner
     @entity
-  end
-
-  def entity_version_adaptor_class(xml_version_adaptor_class)
-    xml_version_adaptor_class::ExaminerVersion
   end
 
   def attribute_keys
